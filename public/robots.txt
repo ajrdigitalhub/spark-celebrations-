@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://sparkcelebrations.in/sitemap.xml
