@@ -78,57 +78,91 @@ import { firstValueFrom } from 'rxjs';
 
       <!-- Add/Edit Modal -->
       @if (formOpen()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center" (click)="closeForm()">
-          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-          <div class="relative w-full max-w-lg bg-bg-surface border border-border rounded-2xl p-8 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
-            <h3 class="text-xl font-heading font-semibold mb-6">{{ editing() ? 'Edit' : 'Add' }} Service</h3>
+        <div class="fixed inset-0 z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <!-- Background backdrop -->
+          <div class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" aria-hidden="true" (click)="closeForm()"></div>
 
-            <form (ngSubmit)="saveService()" class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">Title *</label>
-                <input type="text" [(ngModel)]="form.title" name="title" required class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" />
+          <!-- Scrollable area covering the viewport -->
+          <div class="fixed inset-0 z-10 w-screen overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/40">
+            <div class="flex min-h-full justify-center p-4 text-center sm:p-0 items-start" (click)="closeForm()">
+              
+              <!-- Modal panel -->
+              <div class="relative transform rounded-2xl bg-bg-surface text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl border border-border mt-10 mb-10" (click)="$event.stopPropagation()">
+                
+                <!-- Sticky Header -->
+                <div class="p-6 pb-4 flex-shrink-0 border-b border-border/50 sticky top-0 bg-bg-surface z-10 rounded-t-2xl">
+                  <h3 class="text-xl font-heading font-semibold">{{ editing() ? 'Edit' : 'Add' }} Service</h3>
+                </div>
+                
+                <!-- Body (No internal scrollbar) -->
+                <div class="p-6 pt-6">
+                  <form (ngSubmit)="saveService()">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      
+                      <!-- Left Column -->
+                      <div class="space-y-5">
+                        <div>
+                          <label class="block text-sm font-medium text-text-secondary mb-1.5">Title *</label>
+                          <input type="text" [(ngModel)]="form.title" name="title" required class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" />
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
+                          <textarea [(ngModel)]="form.description" name="description" rows="4" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all resize-none"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                          <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Price</label>
+                            <input type="text" [(ngModel)]="form.price" name="price" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" placeholder="₹4,999" />
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Features</label>
+                            <input type="text" [(ngModel)]="form.featuresStr" name="features" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" placeholder="Comma-separated" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Right Column -->
+                      <div class="space-y-5 flex flex-col">
+                        <div>
+                          <label class="block text-sm font-medium text-text-secondary mb-1.5">Main Image</label>
+                          <div class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl">
+                            <input type="file" accept="image/*" (change)="onImageSelect($event)" class="w-full text-text-primary text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:bg-accent/10 file:text-accent file:font-medium hover:file:bg-accent/20 cursor-pointer" />
+                          </div>
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-text-secondary mb-1.5">Gallery Images (Multiple)</label>
+                          <div class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl">
+                            <input type="file" multiple accept="image/*" (change)="onGallerySelect($event)" class="w-full text-text-primary text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:bg-accent/10 file:text-accent file:font-medium hover:file:bg-accent/20 cursor-pointer" />
+                          </div>
+                          @if (editing() && form.galleryUrls?.length) {
+                            <p class="text-xs text-text-muted mt-2">Currently has {{ form.galleryUrls.length }} images. Uploading new ones will add to the gallery.</p>
+                          }
+                        </div>
+                        
+                        <div class="flex items-center gap-6 pt-2">
+                          <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" [(ngModel)]="form.isActive" name="isActive" class="w-4 h-4 accent-accent" />
+                            <span class="text-sm text-text-secondary">Active</span>
+                          </label>
+                          <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" [(ngModel)]="form.bookingEnabled" name="bookingEnabled" class="w-4 h-4 accent-accent" />
+                            <span class="text-sm text-text-secondary">Booking Enabled</span>
+                          </label>
+                        </div>
+                        
+                        <div class="flex gap-3 mt-auto pt-6">
+                          <button type="button" class="btn-ghost flex-1 !rounded-xl" (click)="closeForm()">Cancel</button>
+                          <button type="submit" class="btn-primary flex-1 !rounded-xl" [disabled]="saving()">
+                            <span>{{ saving() ? 'Saving...' : 'Save Service' }}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
-                <textarea [(ngModel)]="form.description" name="description" rows="3" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all resize-none"></textarea>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">Price</label>
-                <input type="text" [(ngModel)]="form.price" name="price" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" placeholder="₹4,999" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">Features (comma-separated)</label>
-                <input type="text" [(ngModel)]="form.featuresStr" name="features" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" placeholder="Private Theatre, 2 Hours, Decorations" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">Main Image</label>
-                <input type="file" accept="image/*" (change)="onImageSelect($event)" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-bg-primary file:font-medium file:text-sm" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1.5">Gallery Images (Multiple)</label>
-                <input type="file" multiple accept="image/*" (change)="onGallerySelect($event)" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-bg-primary file:font-medium file:text-sm" />
-                @if (editing() && form.galleryUrls?.length) {
-                  <p class="text-xs text-text-muted mt-2">Currently has {{ form.galleryUrls.length }} images. Uploading new ones will add to the gallery.</p>
-                }
-              </div>
-              <div class="flex items-center gap-6">
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" [(ngModel)]="form.isActive" name="isActive" class="w-4 h-4 accent-accent" />
-                  <span class="text-sm text-text-secondary">Active</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" [(ngModel)]="form.bookingEnabled" name="bookingEnabled" class="w-4 h-4 accent-accent" />
-                  <span class="text-sm text-text-secondary">Booking Enabled</span>
-                </label>
-              </div>
-              <div class="flex gap-3 mt-6">
-                <button type="button" class="btn-ghost flex-1 !rounded-xl" (click)="closeForm()">Cancel</button>
-                <button type="submit" class="btn-primary flex-1 !rounded-xl" [disabled]="saving()">
-                  <span>{{ saving() ? 'Saving...' : 'Save Service' }}</span>
-                </button>
-              </div>
-            </form>
-          </div>
+            </div>
+        </div>
         </div>
       }
     </div>

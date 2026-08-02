@@ -8,8 +8,8 @@
  */
 
 import {setGlobalOptions} from "firebase-functions";
-// import {onRequest} from "firebase-functions/https";
-// import * as logger from "firebase-functions/logger";
+import {onRequest} from "firebase-functions/v2/https";
+import * as logger from "firebase-functions/logger";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -23,10 +23,7 @@ import {setGlobalOptions} from "firebase-functions";
 // NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
 // functions should each use functions.runWith({ maxInstances: 10 }) instead.
 // In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+import app from "../../server/src/index.js";
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+// Export the Express API as a Firebase Cloud Function
+export const api = onRequest({ region: 'us-central1' }, app);

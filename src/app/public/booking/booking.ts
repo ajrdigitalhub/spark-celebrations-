@@ -91,19 +91,7 @@ interface BookingDate {
                       <div class="text-sm text-white/80 mb-5 pb-5 border-b border-white/10 flex-grow">From {{ venue.price }}</div>
                     }
 
-                    <div>
-                      <p class="text-xs text-[#d4af37] font-medium mb-3 flex items-center gap-1">
-                        <app-icon name="sparkles" [size]="14"></app-icon> Package Includes:
-                      </p>
-                      <ul class="grid grid-cols-1 gap-y-2.5">
-                        @for (feature of venue.features; track feature) {
-                          <li class="text-xs text-white/80 flex items-start gap-2">
-                            <span class="text-[#d4af37]/60 text-[10px] mt-[1px]">●</span>
-                            <span class="leading-tight">{{ feature }}</span>
-                          </li>
-                        }
-                      </ul>
-                    </div>
+
                   </div>
                 }
               </div>
@@ -123,7 +111,7 @@ interface BookingDate {
             <div class="animate-fade-in">
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 @for (addon of activeAddons(); track addon.id) {
-                  <div class="p-5 rounded-xl border cursor-pointer transition-all flex flex-col"
+                  <div class="p-2.5 rounded-xl border cursor-pointer transition-all flex flex-col"
                        [class.border-[#d4af37]]="isAddonSelected(addon.id)"
                        [class.bg-[#d4af37]/5]="isAddonSelected(addon.id)"
                        [class.border-white/10]="!isAddonSelected(addon.id)"
@@ -131,20 +119,20 @@ interface BookingDate {
                        [class.hover:border-white/30]="!isAddonSelected(addon.id)"
                        (click)="toggleAddon(addon.id)">
                     
-                    <div class="flex items-start justify-between mb-3">
-                      <div class="w-6 h-6 rounded-md border flex items-center justify-center transition-colors"
+                    <div class="flex items-start justify-between mb-1.5">
+                      <div class="w-5 h-5 rounded-md border flex items-center justify-center transition-colors"
                            [class.bg-[#d4af37]]="isAddonSelected(addon.id)"
                            [class.border-[#d4af37]]="isAddonSelected(addon.id)"
                            [class.border-white/20]="!isAddonSelected(addon.id)">
                         @if (isAddonSelected(addon.id)) {
-                          <app-icon name="check" [size]="14" class="text-black"></app-icon>
+                          <app-icon name="check" [size]="12" class="text-black"></app-icon>
                         }
                       </div>
-                      <span class="text-sm font-medium text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-1 rounded-full">{{ addon.price || 'Ask Price' }}</span>
+                      <span class="text-xs font-medium text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">{{ addon.price || 'Ask Price' }}</span>
                     </div>
-                    <h4 class="text-white font-medium mb-2">{{ addon.title }}</h4>
+                    <h4 class="text-white text-sm font-medium">{{ addon.title }}</h4>
                     @if (addon.description) {
-                      <p class="text-xs text-text-muted leading-relaxed">{{ addon.description }}</p>
+                      <p class="text-xs text-text-muted leading-relaxed mt-1.5">{{ addon.description }}</p>
                     }
                   </div>
                 }
@@ -385,7 +373,7 @@ export class BookingPageComponent implements OnInit {
   venues = [
     {
       id: 'party-theatre',
-      title: 'Party Theatre',
+      title: 'Private Theatre',
       price: '₹1,999',
       features: [
         'Private Theatre Room',
@@ -398,7 +386,7 @@ export class BookingPageComponent implements OnInit {
     },
     {
       id: 'open-events',
-      title: 'Open Events',
+      title: 'Outdoor Events',
       price: 'Custom Pricing',
       features: [
         'Outdoor Spaces',

@@ -38,10 +38,10 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
             <a [routerLink]="['/services', service.id]" class="service-card card p-0 group block cursor-pointer">
               <!-- Image Area -->
               <div class="h-48 bg-bg-elevated relative overflow-hidden flex items-center justify-center">
-                @if (service.imageUrl) {
+                @if (service.imageUrl && service.imageUrl.trim().length > 0) {
                   <img [src]="service.imageUrl | imageUrl" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out absolute inset-0">
                 } @else {
-                  <app-icon [name]="service.title?.includes('Birthday') ? 'cake' : 'baby'" [size]="48" class="text-accent"></app-icon>
+                  <app-icon [name]="service.title?.toLowerCase()?.includes('birthday') ? 'cake' : 'baby'" [size]="48" class="text-accent/50"></app-icon>
                 }
                 @if (service.price) {
                   <div class="absolute top-3 right-3 z-20 px-3 py-1 bg-accent/90 backdrop-blur-sm shadow-lg rounded-full text-white font-semibold text-xs">
