@@ -26,7 +26,7 @@ import { IconComponent } from '../icon/icon.component';
             </p>
             <!-- Social Icons -->
             <div class="flex gap-3">
-              @for (social of socials; track social.name) {
+              @for (social of socials(); track social.name) {
                 <a
                   [href]="social.url"
                   target="_blank"
@@ -158,11 +158,11 @@ export class FooterComponent implements OnInit {
     { label: 'Terms of Service', url: '/terms' },
   ];
 
-  socials = [
+  socials = signal([
     { name: 'Instagram', icon: 'instagram', url: 'https://instagram.com/sparkcelebrations' },
     { name: 'Facebook', icon: 'facebook', url: 'https://facebook.com/sparkcelebrations' },
     { name: 'YouTube', icon: 'youtube', url: '#' },
-  ];
+  ]);
 
   ngOnInit(): void {
     this.api.getSettings().subscribe({
@@ -177,6 +177,17 @@ export class FooterComponent implements OnInit {
         }
         if (settings.footer) {
           this.copyright.set(settings.footer.copyright);
+          if (settings.footer.socialMedia) {
+            const sm = settings.footer.socialMedia;
+            const newSocials = [];
+            if (sm.instagram) newSocials.push({ name: 'Instagram', icon: 'instagram', url: sm.instagram });
+            if (sm.facebook) newSocials.push({ name: 'Facebook', icon: 'facebook', url: sm.facebook });
+            if (sm.youtube) newSocials.push({ name: 'YouTube', icon: 'youtube', url: sm.youtube });
+            if (sm.twitter) newSocials.push({ name: 'Twitter', icon: 'twitter', url: sm.twitter });
+            if (newSocials.length > 0) {
+              this.socials.set(newSocials);
+            }
+          }
         }
       },
       error: () => {

@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { Flipbook } from '../../core/models/index';
 import { IconComponent } from '../../shared/components/icon/icon.component';
-import { ImageCropperComponent, ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
+import { ImageCropperService } from '../../core/services/image-cropper.service';
 
 @Component({
   selector: 'app-flipbook-mgmt',
   standalone: true,
-  imports: [CommonModule, IconComponent, ImageCropperComponent],
+  imports: [CommonModule, IconComponent],
   template: `
     <div>
       <div class="flex items-center justify-between mb-6">
@@ -28,34 +28,6 @@ import { ImageCropperComponent, ImageCroppedEvent, LoadedImage } from 'ngx-image
             </button>
           </div>
       </div>
-
-      <!-- Cropper Modal -->
-      @if (showCropper()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div class="bg-bg-surface p-6 rounded-2xl max-w-2xl w-full">
-            <h3 class="text-lg font-medium text-text-primary mb-4">Crop Image</h3>
-            <p class="text-sm text-text-secondary mb-4">Crop your image to the perfect 5:6 aspect ratio for the flipbook.</p>
-            
-            <div class="bg-bg-elevated rounded-xl overflow-hidden border border-border h-[400px]">
-              <image-cropper
-                [imageChangedEvent]="imageChangedEvent()"
-                [maintainAspectRatio]="true"
-                [aspectRatio]="5 / 6"
-                format="jpeg"
-                (imageCropped)="imageCropped($event)"
-                (imageLoaded)="imageLoaded()"
-                (cropperReady)="cropperReady()"
-                (loadImageFailed)="loadImageFailed()"
-              ></image-cropper>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-6">
-              <button class="btn-ghost" (click)="cancelCrop()">Cancel</button>
-              <button class="btn-primary" (click)="uploadCroppedImage()">Upload</button>
-            </div>
-          </div>
-        </div>
-      }
 
       @if (currentFlipbook()) {
         <div class="mt-8 border border-border rounded-xl p-6 bg-bg-surface">
@@ -140,18 +112,11 @@ import { ImageCropperComponent, ImageCroppedEvent, LoadedImage } from 'ngx-image
 })
 export class FlipbookMgmtComponent implements OnInit {
   private api = inject(ApiService);
+  private cropper = inject(ImageCropperService);
 
   currentFlipbook = signal<Flipbook | null>(null);
-  isUploading = signal(false);
-
-  // Upload Context
   uploadTarget = signal<'page' | 'cover' | 'backCover'>('page');
-
-  // Cropper State
-  showCropper = signal(false);
-  imageChangedEvent = signal<Event | null>(null);
-  croppedImageBlob = signal<Blob | null | undefined>(null);
-  currentOriginalFileName = signal<string>('cropped-image.jpg');
+  isUploading = signal(false);
 
   ngOnInit(): void {
     this.loadFlipbook();
@@ -166,56 +131,32 @@ export class FlipbookMgmtComponent implements OnInit {
 
   triggerUpload(target: 'page' | 'cover' | 'backCover', fileInput: HTMLInputElement) {
     this.uploadTarget.set(target);
-    // Give Angular a tick to update the [multiple] binding on the input
     setTimeout(() => {
       fileInput.click();
     }, 0);
   }
 
-  onFilesSelected(event: Event, fileInput: HTMLInputElement) {
+  async onFilesSelected(event: Event, fileInput: HTMLInputElement) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      // Single file -> Open Cropper
-      if (input.files.length === 1) {
-        this.currentOriginalFileName.set(input.files[0].name);
-        this.imageChangedEvent.set(event);
-        this.showCropper.set(true);
-      } 
-      // Multiple files -> Upload immediately and append (only valid for pages)
-      else if (this.uploadTarget() === 'page') {
-        this.isUploading.set(true);
-        const filesArray = Array.from(input.files);
-        this.uploadMultipleFiles(filesArray);
+      const filesArray = Array.from(input.files);
+      const newFiles: File[] = [];
+
+      for (const file of filesArray) {
+        // Use 5:6 aspect ratio for flipbook pages/covers
+        const cropped = await this.cropper.cropImage(file, 5/6);
+        if (cropped) {
+          newFiles.push(cropped);
+        }
       }
+
+      if (newFiles.length > 0) {
+        this.isUploading.set(true);
+        this.uploadMultipleFiles(newFiles);
+      }
+      
+      input.value = '';
     }
-  }
-
-  // --- Cropper Methods ---
-  imageCropped(event: ImageCroppedEvent) {
-    this.croppedImageBlob.set(event.blob);
-  }
-  imageLoaded(image?: LoadedImage) {}
-  cropperReady() {}
-  loadImageFailed() {
-    console.error('Image load failed');
-  }
-
-  cancelCrop() {
-    this.showCropper.set(false);
-    this.imageChangedEvent.set(null);
-    this.croppedImageBlob.set(null);
-  }
-
-  uploadCroppedImage() {
-    const blob = this.croppedImageBlob();
-    if (!blob) return;
-
-    this.isUploading.set(true);
-    this.showCropper.set(false);
-    
-    // Create a File from the Blob
-    const file = new File([blob], this.currentOriginalFileName(), { type: 'image/jpeg' });
-    this.uploadMultipleFiles([file]);
   }
 
   // --- Upload & API Logic ---

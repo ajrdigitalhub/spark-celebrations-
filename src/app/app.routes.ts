@@ -1,3 +1,4 @@
+// app routes
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -27,10 +28,10 @@ export const routes: Routes = [
         title: 'Service Detail | Spark Celebrations',
       },
       {
-        path: 'book',
+        path: 'events',
         loadComponent: () =>
-          import('./public/booking/booking').then((m) => m.BookingPageComponent),
-        title: 'Book Now | Spark Celebrations',
+          import('./public/events/events').then((m) => m.EventsComponent),
+        title: 'Events | Spark Celebrations',
       },
       {
         path: 'gallery',

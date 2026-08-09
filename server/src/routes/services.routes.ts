@@ -62,7 +62,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 // ── POST /api/services — Create service (Admin) ──
 router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { title, description, features, price, imageUrl, isActive, bookingEnabled, sortOrder } = req.body;
+    const { title, description, features, price, imageUrl, galleryUrls, isActive, bookingEnabled, sortOrder, availableVenues } = req.body;
 
     const validationError = validateRequired({ title });
     if (validationError) {
@@ -76,9 +76,11 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       features: features || [],
       price: price || null,
       imageUrl: imageUrl || null,
+      galleryUrls: galleryUrls || null,
       isActive: isActive ?? true,
       bookingEnabled: bookingEnabled ?? true,
       sortOrder: sortOrder ?? 0,
+      availableVenues: availableVenues || [],
     }).returning();
 
     res.status(201).json(result[0]);
@@ -97,7 +99,7 @@ router.put('/:id', requireAuth, async (req: Request, res: Response) => {
     }
 
     const updates: Record<string, unknown> = { updatedAt: new Date() };
-    const allowedFields = ['title', 'description', 'features', 'price', 'imageUrl', 'isActive', 'bookingEnabled', 'sortOrder'];
+    const allowedFields = ['title', 'description', 'features', 'price', 'imageUrl', 'galleryUrls', 'isActive', 'bookingEnabled', 'sortOrder', 'availableVenues'];
 
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {

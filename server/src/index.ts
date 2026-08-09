@@ -28,7 +28,7 @@ app.use(helmet({
 
 // ── CORS ─────────────────────────────────────
 app.use(cors({
-  origin: ['http://localhost:4200', 'http://localhost:4000'],
+  origin: ['http://localhost:4200', 'http://localhost:4000', 'https://sparkcelebrationsbh.web.app', 'https://sparkcelebrationsbh.firebaseapp.com'],
   credentials: true,
 }));
 

@@ -50,3 +50,7 @@ Thumbs.db
 
 server/uploads/*
 !server/uploads/.gitkeep
+
+# Firebase Credentials
+server/*-firebase-adminsdk-*.json
+server/firebase-adminsdk.json

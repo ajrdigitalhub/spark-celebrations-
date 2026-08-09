@@ -8,6 +8,7 @@ import { SparkService } from '../../core/models/index';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { switchMap } from 'rxjs';
+import { BookingService } from '../../core/services/booking.service';
 
 @Component({
   selector: 'app-service-detail',
@@ -113,11 +114,10 @@ import { switchMap } from 'rxjs';
 
               <!-- Book Now Action -->
               <div class="pt-8 border-t border-border">
-                <a class="btn-primary w-full sm:w-auto !py-4 !px-10 !text-lg !rounded-xl inline-block text-center" 
-                   [routerLink]="['/book']" 
-                   [queryParams]="{serviceId: service()?.id}">
+                <button class="btn-primary w-full sm:w-auto !py-4 !px-10 !text-lg !rounded-xl inline-block text-center" 
+                   (click)="bookingService.open(service() || undefined)">
                   <span>Book This Package</span>
-                </a>
+                </button>
                 <p class="text-sm text-text-muted mt-4">
                   * Dates are subject to availability. A member of our team will contact you to confirm your booking.
                 </p>
@@ -141,6 +141,7 @@ export class ServiceDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private platformId = inject(PLATFORM_ID);
+  public bookingService = inject(BookingService);
 
   service = signal<SparkService | null>(null);
   loading = signal(true);

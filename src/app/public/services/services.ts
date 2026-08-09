@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
 import { GsapService } from '../../core/services/gsap.service';
+import { BookingService } from '../../core/services/booking.service';
 import { SparkService } from '../../core/models/index';
 import { SectionHeadingComponent } from '../../shared/components/section-heading/section-heading';
 import { BookingModalComponent } from '../../shared/components/booking-modal/booking-modal';
@@ -13,7 +14,7 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 @Component({
   selector: 'app-services',
   standalone: true,
-  imports: [CommonModule, RouterLink, SectionHeadingComponent, BookingModalComponent, IconComponent, ImageUrlPipe],
+  imports: [CommonModule, RouterLink, SectionHeadingComponent, IconComponent, ImageUrlPipe],
   template: `
     <!-- Hero Banner -->
     <section class="pt-32 pb-16 relative">
@@ -75,14 +76,12 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 
                 <!-- Book Button -->
                 @if (service.bookingEnabled) {
-                  <a
+                  <button
                     class="btn-primary w-full !rounded-xl !py-2 !text-sm block text-center mt-2"
-                    [routerLink]="['/book']"
-                    [queryParams]="{serviceId: service.id}"
-                    (click)="$event.stopPropagation()"
+                    (click)="bookingService.open(service); $event.preventDefault(); $event.stopPropagation()"
                   >
                     <span>Quick Book</span>
-                  </a>
+                  </button>
                 }
               </div>
             </a>
@@ -98,8 +97,6 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
         }
       </div>
     </section>
-
-    <app-booking-modal #bookingModal />
   `,
   styles: `
     .service-card:hover {
@@ -109,12 +106,11 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
   `,
 })
 export class ServicesComponent implements OnInit, AfterViewInit {
-  @ViewChild('bookingModal') bookingModal!: BookingModalComponent;
-
   private platformId = inject(PLATFORM_ID);
   private api = inject(ApiService);
   private seo = inject(SeoService);
   private gsapService = inject(GsapService);
+  public bookingService = inject(BookingService);
 
   services = signal<SparkService[]>([]);
 
@@ -142,6 +138,6 @@ export class ServicesComponent implements OnInit, AfterViewInit {
   }
 
   openBooking(service: SparkService): void {
-    this.bookingModal.open(service);
+    this.bookingService.open(service);
   }
 }

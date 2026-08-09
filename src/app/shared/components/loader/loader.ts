@@ -10,19 +10,19 @@ import { GsapService } from '../../../core/services/gsap.service';
     @if (!isHidden) {
       <div class="fixed inset-0 z-[99999] flex overflow-hidden pointer-events-auto bg-black" #loaderContainer>
         
-        <!-- Left Curtain -->
+        <!-- Curtains are commented out per request
         <div class="curtain curtain-left relative w-1/2 h-full shadow-[15px_0_30px_rgba(0,0,0,0.8)] z-20 overflow-hidden" #leftCurtain>
           <div class="absolute top-0 left-0 w-[100vw] h-full">
             <img src="/images/curtain.png" alt="Curtain" class="w-full h-full object-cover" />
           </div>
         </div>
 
-        <!-- Right Curtain -->
         <div class="curtain curtain-right relative w-1/2 h-full shadow-[-15px_0_30px_rgba(0,0,0,0.8)] z-20 overflow-hidden" #rightCurtain>
           <div class="absolute top-0 right-0 w-[100vw] h-full">
             <img src="/images/curtain.png" alt="Curtain" class="w-full h-full object-cover" />
           </div>
         </div>
+        -->
 
         <!-- Center Logo -->
         <div class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none" #logoContainer>
@@ -66,12 +66,14 @@ export class LoaderComponent implements AfterViewInit {
   async animateOut() {
     await this.gsapService.init(); 
     const gsap = this.gsapService.gsap;
-    if (!gsap || !this.leftCurtain || !this.rightCurtain) return;
+    if (!gsap) return;
 
     const tl = gsap.timeline({
       onComplete: () => {
         if (this.loaderContainer) {
           this.loaderContainer.nativeElement.style.display = 'none';
+          this.isHidden = true;
+          this.cdr.detectChanges();
         }
       }
     });
@@ -87,6 +89,7 @@ export class LoaderComponent implements AfterViewInit {
     // 2. Remove the black background of the loader container early so we can see the site
     tl.set(this.loaderContainer.nativeElement, { backgroundColor: 'transparent' });
 
+    /* 
     // 3. Slide curtains apart
     tl.to(this.leftCurtain.nativeElement, {
       xPercent: -100,
@@ -99,5 +102,6 @@ export class LoaderComponent implements AfterViewInit {
       duration: 1.6,
       ease: 'power3.inOut'
     }, "<");
+    */
   }
 }

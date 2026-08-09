@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && node -e \"const fs = require('fs'); const path = 'dist/spark-celebrations/browser/index.csr.html'; if (fs.existsSync(path)) fs.renameSync(path, 'dist/spark-celebrations/browser/index.html');\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:spark-celebrations": "node dist/spark-celebrations/server/server.mjs"

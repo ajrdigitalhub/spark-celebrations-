@@ -1,101 +1,163 @@
 import { Router, Request, Response } from 'express';
-import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
+import busboy from 'busboy';
+import { bucket } from '../config/firebase.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
+import { getDownloadURL } from 'firebase-admin/storage';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = Router();
 
-// ── Multer Configuration for Local Storage ───
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
-    cb(null, uploadsDir);
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const uniqueName = `${uuidv4()}${ext}`;
-    cb(null, uniqueName);
-  },
-});
+const ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/svg+xml',
+  'video/mp4',
+  'video/webm',
+  'application/pdf',
+];
 
-const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedTypes = [
-    'image/jpeg',
-    'image/png',
-    'image/webp',
-    'image/gif',
-    'image/svg+xml',
-    'video/mp4',
-    'video/webm',
-    'application/pdf',
-  ];
+interface UploadedFileInfo {
+  url: string;
+  filename: string;
+  originalName: string;
+  size: number;
+  mimetype: string;
+}
 
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error(`File type ${file.mimetype} not allowed`));
+const handleUpload = (req: Request, res: Response, isMultiple: boolean) => {
+  try {
+    const bb = busboy({ headers: req.headers, limits: { fileSize: 50 * 1024 * 1024 } });
+    const isFirebase = process.env.STORAGE_MODE === 'firebase';
+    const uploads: UploadedFileInfo[] = [];
+    const filePromises: Promise<void>[] = [];
+
+    bb.on('file', (name, file, info) => {
+      const { filename: originalName, mimeType } = info;
+
+      if (!ALLOWED_TYPES.includes(mimeType)) {
+        file.resume(); // Discard the stream
+        return;
+      }
+
+      const ext = path.extname(originalName);
+      const uniqueName = `${uuidv4()}${ext}`;
+      let size = 0;
+
+      const filePromise = new Promise<void>((resolve, reject) => {
+        file.on('data', (data) => {
+          size += data.length;
+        });
+
+        if (isFirebase) {
+          const destFileName = `uploads/${uniqueName}`;
+          const token = uuidv4();
+          const bucketFile = bucket.file(destFileName);
+          const writeStream = bucketFile.createWriteStream({
+            metadata: {
+              contentType: mimeType,
+              metadata: {
+                firebaseStorageDownloadTokens: token
+              }
+            }
+          });
+
+          file.pipe(writeStream);
+
+          writeStream.on('finish', async () => {
+            try {
+              const fileUrl = await getDownloadURL(bucketFile);
+              uploads.push({
+                url: fileUrl,
+                filename: uniqueName,
+                originalName,
+                size,
+                mimetype: mimeType,
+              });
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          });
+          writeStream.on('error', reject);
+        } else {
+          // Local storage mode
+          const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+          if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+          }
+          const finalPath = path.join(uploadsDir, uniqueName);
+          const writeStream = fs.createWriteStream(finalPath);
+          
+          file.pipe(writeStream);
+
+          writeStream.on('finish', () => {
+            const fileUrl = `/uploads/${uniqueName}`;
+            uploads.push({
+              url: fileUrl,
+              filename: uniqueName,
+              originalName,
+              size,
+              mimetype: mimeType,
+            });
+            resolve();
+          });
+          writeStream.on('error', reject);
+        }
+      });
+
+      filePromises.push(filePromise);
+    });
+
+    bb.on('close', async () => {
+      try {
+        await Promise.all(filePromises);
+        if (uploads.length === 0) {
+          res.status(400).json({ error: 'No files uploaded or file type not allowed' });
+          return;
+        }
+        if (isMultiple) {
+          res.status(201).json(uploads);
+        } else {
+          res.status(201).json(uploads[0]);
+        }
+      } catch (err: any) {
+        console.error('Error in file upload processing:', err);
+        res.status(500).json({ error: 'Failed to process files', details: err?.message || err });
+      }
+    });
+
+    bb.on('error', (err: any) => {
+      console.error('Busboy error:', err);
+      res.status(500).json({ error: 'Failed to upload files', details: err?.message || err });
+    });
+
+    if ((req as any).rawBody) {
+      bb.end((req as any).rawBody);
+    } else {
+      req.pipe(bb);
+    }
+  } catch (err: any) {
+    console.error('Error starting upload:', err);
+    res.status(500).json({ error: 'Failed to start upload', details: err?.message || err });
   }
 };
 
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB max
-  },
-});
-
 // ── POST /api/upload — Upload single file (Admin) ──
-router.post('/', requireAuth, upload.single('file'), (req: Request, res: Response) => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ error: 'No file uploaded' });
-      return;
-    }
-
-    const fileUrl = `/uploads/${req.file.filename}`;
-
-    res.status(201).json({
-      url: fileUrl,
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-    });
-  } catch (err) {
-    console.error('Error uploading file:', err);
-    res.status(500).json({ error: 'Failed to upload file' });
-  }
+router.post('/', requireAuth, (req: Request, res: Response) => {
+  handleUpload(req, res, false);
 });
 
 // ── POST /api/upload/multiple — Upload multiple files (Admin) ──
-router.post('/multiple', requireAuth, upload.array('files', 20), (req: Request, res: Response) => {
-  try {
-    const files = req.files as Express.Multer.File[];
-
-    if (!files || files.length === 0) {
-      res.status(400).json({ error: 'No files uploaded' });
-      return;
-    }
-
-    const uploaded = files.map((file) => ({
-      url: `/uploads/${file.filename}`,
-      filename: file.filename,
-      originalName: file.originalname,
-      size: file.size,
-      mimetype: file.mimetype,
-    }));
-
-    res.status(201).json(uploaded);
-  } catch (err) {
-    console.error('Error uploading files:', err);
-    res.status(500).json({ error: 'Failed to upload files' });
-  }
+router.post('/multiple', requireAuth, (req: Request, res: Response) => {
+  handleUpload(req, res, true);
 });
 
 export default router;

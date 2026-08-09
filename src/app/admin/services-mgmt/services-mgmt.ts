@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { SparkService } from '../../core/models/index';
+import { ImageCropperService } from '../../core/services/image-cropper.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 import { firstValueFrom } from 'rxjs';
@@ -139,7 +140,21 @@ import { firstValueFrom } from 'rxjs';
                           }
                         </div>
                         
-                        <div class="flex items-center gap-6 pt-2">
+                        <div class="pt-2 border-t border-border mt-4">
+                          <label class="block text-sm font-medium text-text-secondary mb-3">Available Theatres (Venues)</label>
+                          <div class="flex flex-col gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" [checked]="form.availableVenues.includes('Golden Cage Theatre')" (change)="toggleVenue('Golden Cage Theatre', $event)" class="w-4 h-4 accent-accent" />
+                              <span class="text-sm text-text-primary">Golden Cage Theatre</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" [checked]="form.availableVenues.includes('Jubly Theatre')" (change)="toggleVenue('Jubly Theatre', $event)" class="w-4 h-4 accent-accent" />
+                              <span class="text-sm text-text-primary">Jubly Theatre</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center gap-6 pt-4 border-t border-border mt-4">
                           <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" [(ngModel)]="form.isActive" name="isActive" class="w-4 h-4 accent-accent" />
                             <span class="text-sm text-text-secondary">Active</span>
@@ -170,6 +185,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class ServicesMgmtComponent implements OnInit {
   private api = inject(ApiService);
+  private cropper = inject(ImageCropperService);
 
   services = signal<SparkService[]>([]);
   formOpen = signal(false);
@@ -186,7 +202,19 @@ export class ServicesMgmtComponent implements OnInit {
     isActive: true,
     bookingEnabled: true,
     galleryUrls: [] as string[],
+    availableVenues: [] as string[],
   };
+
+  toggleVenue(venue: string, event: Event): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    if (isChecked) {
+      if (!this.form.availableVenues.includes(venue)) {
+        this.form.availableVenues.push(venue);
+      }
+    } else {
+      this.form.availableVenues = this.form.availableVenues.filter(v => v !== venue);
+    }
+  }
 
   ngOnInit(): void {
     this.loadServices();
@@ -201,7 +229,7 @@ export class ServicesMgmtComponent implements OnInit {
 
   openForm(): void {
     this.editing.set(false);
-    this.form = { title: '', description: '', price: '', featuresStr: '', isActive: true, bookingEnabled: true, galleryUrls: [] };
+    this.form = { title: '', description: '', price: '', featuresStr: '', isActive: true, bookingEnabled: true, galleryUrls: [], availableVenues: [] };
     this.selectedFile = null;
     this.selectedGalleryFiles = [];
     this.formOpen.set(true);
@@ -218,6 +246,7 @@ export class ServicesMgmtComponent implements OnInit {
       isActive: service.isActive,
       bookingEnabled: service.bookingEnabled,
       galleryUrls: service.galleryUrls || [],
+      availableVenues: service.availableVenues || [],
     };
     this.selectedFile = null;
     this.selectedGalleryFiles = [];
@@ -228,18 +257,34 @@ export class ServicesMgmtComponent implements OnInit {
     this.formOpen.set(false);
   }
 
-  onImageSelect(event: Event): void {
+  async onImageSelect(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
+      const cropped = await this.cropper.cropImage(input.files[0], 4/3);
+      if (cropped) {
+        this.selectedFile = cropped;
+      }
+      input.value = ''; // Reset input
     }
   }
 
   selectedGalleryFiles: File[] = [];
-  onGallerySelect(event: Event): void {
+  async onGallerySelect(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.selectedGalleryFiles = Array.from(input.files);
+      const files = Array.from(input.files);
+      const newFiles: File[] = [];
+      for (const file of files) {
+        // Free crop for gallery? User didn't specify. I'll use 4/3 to match main image, or maintainAspectRatio=false.
+        // Wait, "their perfect aspect ratio only able to crop services main 4:3 will be best"
+        // I will let them free crop the gallery images by passing maintainAspectRatio: false.
+        const cropped = await this.cropper.cropImage(file, 1, false);
+        if (cropped) {
+          newFiles.push(cropped);
+        }
+      }
+      this.selectedGalleryFiles = newFiles;
+      input.value = '';
     }
   }
 
@@ -282,6 +327,7 @@ export class ServicesMgmtComponent implements OnInit {
       isActive: this.form.isActive,
       bookingEnabled: this.form.bookingEnabled,
       galleryUrls: newGalleryUrls,
+      availableVenues: this.form.availableVenues,
       ...(imageUrl ? { imageUrl } : {}),
     };
 

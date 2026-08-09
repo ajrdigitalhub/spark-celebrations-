@@ -17,6 +17,7 @@ export interface SparkService {
   price: string | null;
   imageUrl: string | null;
   galleryUrls: string[] | null;
+  availableVenues: string[] | null;
   isActive: boolean;
   bookingEnabled: boolean;
   sortOrder: number;

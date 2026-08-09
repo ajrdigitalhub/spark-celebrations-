@@ -105,7 +105,7 @@ declare var $: any;
           </div>
         }
 
-        @if (flipbookData() && !loading() && flipbookData()!.images.length > 0) {
+        @if (flipbookData() && !loading()) {
           <div class="mt-8 flex justify-center">
             <button class="btn-primary text-lg px-8 py-4 shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-3" (click)="openFlipbook()">
               <app-icon name="book-open" [size]="24"></app-icon>
@@ -115,7 +115,7 @@ declare var $: any;
           <p class="text-text-muted text-sm mt-6">Best experienced on desktop or tablet.</p>
         }
 
-        @if (!loading() && (!flipbookData() || flipbookData()!.images.length === 0)) {
+        @if (!loading() && !flipbookData()) {
           <div class="text-center py-20 max-w-md mx-auto text-text-muted">
             <div class="flex justify-center mb-6"><app-icon name="book-open" [size]="80"></app-icon></div>
             <h3 class="text-xl font-heading font-semibold mb-3 text-text-primary">Flipbook Coming Soon</h3>

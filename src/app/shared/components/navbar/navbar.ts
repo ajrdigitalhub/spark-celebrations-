@@ -9,6 +9,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '../../../core/services/theme.service';
+import { BookingService } from '../../../core/services/booking.service';
 
 @Component({
   selector: 'app-navbar',
@@ -58,12 +59,12 @@ import { ThemeService } from '../../../core/services/theme.service';
               }
             </button>
 
-            <a
-              routerLink="/book"
+            <button
+              (click)="openBooking()"
               class="hidden lg:inline-flex btn-primary !py-2.5 !px-5 !text-sm"
             >
               <span>Book Now</span>
-            </a>
+            </button>
 
             <!-- Hamburger -->
             <button
@@ -106,13 +107,12 @@ import { ThemeService } from '../../../core/services/theme.service';
                 {{ link.label }}
               </a>
             }
-            <a
-              routerLink="/book"
+            <button
+              (click)="openBooking()"
               class="btn-primary mt-4 text-center"
-              (click)="closeMenu()"
             >
               <span>Book Now</span>
-            </a>
+            </button>
           </div>
         </div>
       }
@@ -162,6 +162,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 export class NavbarComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   public themeService = inject(ThemeService);
+  private bookingService = inject(BookingService);
 
   isScrolled = signal(false);
   menuOpen = signal(false);
@@ -169,9 +170,9 @@ export class NavbarComponent implements OnInit {
   navLinks = [
     { label: 'Home', path: '/' },
     { label: 'Services', path: '/services' },
-    { label: 'Gallery', path: '/gallery' },
-    { label: 'About', path: '/about' },
+    { label: 'Events', path: '/events' },
     { label: 'Flipbook', path: '/flipbook' },
+    { label: 'Gallery', path: '/gallery' },
     { label: 'Contact', path: '/contact' },
   ];
 
@@ -198,5 +199,10 @@ export class NavbarComponent implements OnInit {
 
   closeMenu(): void {
     this.menuOpen.set(false);
+  }
+
+  openBooking(): void {
+    this.bookingService.open();
+    this.closeMenu();
   }
 }

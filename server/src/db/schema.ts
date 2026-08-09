@@ -23,6 +23,7 @@ export const services = pgTable('services', {
   galleryUrls: text('gallery_urls').array(),
   isActive: boolean('is_active').default(true).notNull(),
   bookingEnabled: boolean('booking_enabled').default(true).notNull(),
+  availableVenues: text('available_venues').array(),
   sortOrder: integer('sort_order').default(0).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

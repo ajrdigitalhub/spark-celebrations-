@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { GalleryImage } from '../../core/models/index';
+import { ImageCropperService } from '../../core/services/image-cropper.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 
@@ -77,6 +78,7 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 })
 export class GalleryMgmtComponent implements OnInit {
   private api = inject(ApiService);
+  private cropper = inject(ImageCropperService);
 
   images = signal<GalleryImage[]>([]);
   uploading = signal(false);
@@ -98,8 +100,23 @@ export class GalleryMgmtComponent implements OnInit {
 
     this.uploading.set(true);
     const files = Array.from(input.files);
+    
+    const croppedFiles: File[] = [];
+    for (const file of files) {
+      // 3:4 aspect ratio for gallery images (matching placeholder)
+      const cropped = await this.cropper.cropImage(file, 3/4);
+      if (cropped) {
+        croppedFiles.push(cropped);
+      }
+    }
 
-    this.api.uploadMultipleFiles(files).subscribe({
+    if (croppedFiles.length === 0) {
+      this.uploading.set(false);
+      input.value = '';
+      return;
+    }
+
+    this.api.uploadMultipleFiles(croppedFiles).subscribe({
       next: (uploaded) => {
         const galleryImages = uploaded.map((file, i) => ({
           imageUrl: file.url,

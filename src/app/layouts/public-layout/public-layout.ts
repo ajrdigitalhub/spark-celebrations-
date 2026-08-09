@@ -3,16 +3,19 @@ import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar';
 import { FooterComponent } from '../../shared/components/footer/footer';
 
+import { BookingModalComponent } from '../../shared/components/booking-modal/booking-modal';
+
 @Component({
   selector: 'app-public-layout',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, FooterComponent],
+  imports: [RouterOutlet, NavbarComponent, FooterComponent, BookingModalComponent],
   template: `
     <app-navbar />
     <main>
       <router-outlet />
     </main>
     <app-footer />
+    <app-booking-modal />
 
     <!-- Floating WhatsApp Button -->
     <a

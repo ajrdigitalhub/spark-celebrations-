@@ -20,11 +20,12 @@ import { BookingModalComponent } from '../../shared/components/booking-modal/boo
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { GalleryCoverflowComponent } from '../../shared/components/gallery-coverflow/gallery-coverflow';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+import { BookingService } from '../../core/services/booking.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, SectionHeadingComponent, BookingModalComponent, IconComponent, GalleryCoverflowComponent, ImageUrlPipe],
+  imports: [CommonModule, RouterLink, SectionHeadingComponent, IconComponent, GalleryCoverflowComponent, ImageUrlPipe],
   template: `
     <!-- ═══════════ HERO SECTION ═══════════ -->
     <section class="relative min-h-screen flex items-center justify-center overflow-hidden" id="hero">
@@ -90,12 +91,12 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 
           <!-- CTAs -->
           <div class="hero-ctas flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 mt-8">
-            <a
+            <button
               class="btn-primary !py-4 !px-8 !text-base !rounded-xl shadow-2xl shadow-accent/20"
-              routerLink="/book"
+              (click)="bookingService.open()"
             >
               <span>Book Your Celebration</span>
-            </a>
+            </button>
             <a routerLink="/services" class="btn-ghost !py-4 !px-8 !text-base !rounded-xl !text-white hover:!bg-white/10 backdrop-blur-sm border border-white/20">
               Explore Services →
             </a>
@@ -234,9 +235,6 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
         </div>
       </div>
     </section>
-
-    <!-- Booking Modal -->
-    <app-booking-modal #bookingModal />
   `,
   styles: `
     .line-clamp-2 {
@@ -260,11 +258,11 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
   `,
 })
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('bookingModal') bookingModal!: BookingModalComponent;
 
   private platformId = inject(PLATFORM_ID);
   private api = inject(ApiService);
   private gsapService = inject(GsapService);
+  public bookingService = inject(BookingService);
   private seo = inject(SeoService);
 
   services = signal<SparkService[]>([]);

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { ImageCropperModalComponent } from '../../shared/components/image-cropper-modal/image-cropper-modal';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, IconComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ImageCropperModalComponent],
   template: `
     <div class="flex min-h-screen bg-bg-primary">
       <!-- Sidebar -->
@@ -90,6 +91,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
           <router-outlet />
         </div>
       </main>
+      <app-image-cropper-modal></app-image-cropper-modal>
     </div>
   `,
   styles: `
