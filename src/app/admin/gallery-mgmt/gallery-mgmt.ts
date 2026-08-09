@@ -103,8 +103,8 @@ export class GalleryMgmtComponent implements OnInit {
     
     const croppedFiles: File[] = [];
     for (const file of files) {
-      // 3:4 aspect ratio for gallery images (matching placeholder)
-      const cropped = await this.cropper.cropImage(file, 3/4);
+      // 7:10 aspect ratio for gallery images (matching coverflow cards)
+      const cropped = await this.cropper.cropImage(file, 7/10);
       if (cropped) {
         croppedFiles.push(cropped);
       }

@@ -36,15 +36,15 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
           <!-- Header & Stepper -->
           <div class="shrink-0 mb-6">
             <h3 class="text-2xl font-heading font-semibold mb-1">Book Your Celebration</h3>
-            <p class="text-text-secondary text-sm mb-4">Complete these {{ totalSteps }} steps to finalize</p>
+            <p class="text-text-secondary text-sm mb-4">Complete these {{ totalSteps() }} steps to finalize</p>
 
             <!-- Stepper UI -->
             <div class="flex items-center justify-between relative px-2">
               <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-bg-elevated rounded-full -z-10"></div>
               <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-accent rounded-full -z-10 transition-all duration-300"
-                   [style.width]="((currentStep() - 1) / (totalSteps - 1) * 100) + '%'"></div>
+                   [style.width]="((currentStep() - 1) / (totalSteps() - 1) * 100) + '%'"></div>
               
-              @for (i of [1,2,3,4,5]; track i) {
+              @for (i of stepArray(); track i) {
                 <div class="flex flex-col items-center gap-1">
                   <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
                        [class]="currentStep() >= i ? 'bg-accent text-white shadow-lg shadow-accent/30' : 'bg-bg-elevated text-text-muted border border-border'">
@@ -79,7 +79,15 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
                                  [class.scale-0]="form.selectedTheatre !== theatre"></div>
                           </div>
                         </div>
-                        <p class="text-xs text-text-muted">Premium celebration space</p>
+                        <p class="text-xs text-text-muted">
+                          @if (theatre === 'Jubly Theatre') {
+                            10-15 members capacity
+                          } @else if (theatre === 'Golden Cage Theatre') {
+                            4-5 members capacity
+                          } @else {
+                            Premium celebration space
+                          }
+                        </p>
                       </div>
                     </label>
                   }
@@ -88,7 +96,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
             }
 
             <!-- Step 2: Service -->
-            @if (currentStep() === 2) {
+            @if (!isPreSelectedService() && currentStep() === 2) {
               <div class="space-y-4 animate-fade-in">
                 <h4 class="text-lg font-medium text-text-primary mb-4">Select Package</h4>
                 @if (filteredServices().length === 0) {
@@ -130,7 +138,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
             }
 
             <!-- Step 3: Addons -->
-            @if (currentStep() === 3) {
+            @if (currentStep() === (isPreSelectedService() ? 2 : 3)) {
               <div class="space-y-4 animate-fade-in">
                 <h4 class="text-lg font-medium text-text-primary mb-4">Enhance Your Experience (Optional)</h4>
                 @if (addons().length === 0) {
@@ -165,7 +173,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
             }
 
             <!-- Step 4: Date & Time -->
-            @if (currentStep() === 4) {
+            @if (currentStep() === (isPreSelectedService() ? 3 : 4)) {
               <div class="space-y-5 animate-fade-in pt-2">
                 <div>
                   <label class="block text-sm font-medium text-text-secondary mb-1.5">Event Date *</label>
@@ -197,7 +205,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
             }
 
             <!-- Step 5: Details -->
-            @if (currentStep() === 5) {
+            @if (currentStep() === (isPreSelectedService() ? 4 : 5)) {
               <div class="space-y-4 animate-fade-in pt-2">
                 <div>
                   <label class="block text-sm font-medium text-text-secondary mb-1.5">Your Name *</label>
@@ -243,7 +251,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
               <div></div>
             }
             
-            @if (currentStep() < totalSteps) {
+            @if (currentStep() < totalSteps()) {
               <button class="btn-primary !px-8 !py-3 !rounded-xl" (click)="nextStep()" [disabled]="!canProceed()">Next Step</button>
             } @else {
               <button
@@ -288,7 +296,9 @@ export class BookingModalComponent implements OnInit {
   addons = signal<Addon[]>([]);
   theatres = ['Golden Cage Theatre', 'Jubly Theatre'];
   
-  totalSteps = 5;
+  isPreSelectedService = computed(() => !!this.bookingService.selectedService());
+  totalSteps = computed(() => this.isPreSelectedService() ? 4 : 5);
+  stepArray = computed(() => Array.from({ length: this.totalSteps() }, (_, i) => i + 1));
   currentStep = signal(1);
 
   form = {
@@ -326,7 +336,7 @@ export class BookingModalComponent implements OnInit {
           // Auto-select theatre if service only has 1 venue configured
           if (svc.availableVenues && svc.availableVenues.length === 1) {
              this.form.selectedTheatre = svc.availableVenues[0];
-             this.currentStep.set(3); // jump to addons
+             this.currentStep.set(2); // jump to addons (now Step 2)
           } else {
              // Let them select theatre, but remember service
              this.currentStep.set(1); 
@@ -393,16 +403,25 @@ export class BookingModalComponent implements OnInit {
   
   canProceed(): boolean {
     const s = this.currentStep();
+    const isPre = this.isPreSelectedService();
+    
     if (s === 1) return !!this.form.selectedTheatre;
-    if (s === 2) return !!this.form.selectedService;
-    if (s === 3) return true; // Addons are optional
-    if (s === 4) return !!this.form.eventDate && !!this.form.preferredTime;
-    if (s === 5) return !!this.form.customerName && !!this.form.mobile;
+    if (!isPre && s === 2) return !!this.form.selectedService;
+    
+    // Addons step (Step 2 if pre-selected, Step 3 if not)
+    if (s === (isPre ? 2 : 3)) return true;
+    
+    // Date & Time step
+    if (s === (isPre ? 3 : 4)) return !!this.form.eventDate && !!this.form.preferredTime;
+    
+    // Details step
+    if (s === (isPre ? 4 : 5)) return !!this.form.customerName && !!this.form.mobile;
+    
     return false;
   }
   
   nextStep(): void {
-    if (this.canProceed() && this.currentStep() < this.totalSteps) {
+    if (this.canProceed() && this.currentStep() < this.totalSteps()) {
        this.currentStep.update(v => v + 1);
     }
   }
