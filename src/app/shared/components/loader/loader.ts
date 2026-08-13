@@ -26,9 +26,7 @@ import { GsapService } from '../../../core/services/gsap.service';
 
         <!-- Center Logo -->
         <div class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none" #logoContainer>
-           <div class="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-accent to-accent-dim flex items-center justify-center shadow-glow">
-              <span class="text-bg-primary font-bold text-5xl md:text-7xl font-heading">S</span>
-           </div>
+           <img src="/images/logo.png" alt="Spark Celebrations" class="w-48 md:w-64 lg:w-80 h-auto object-contain drop-shadow-2xl animate-pulse" />
         </div>
 
       </div>

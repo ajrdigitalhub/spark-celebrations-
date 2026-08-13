@@ -148,8 +148,8 @@ import { firstValueFrom } from 'rxjs';
                               <span class="text-sm text-text-primary">Golden Cage Theatre</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
-                              <input type="checkbox" [checked]="form.availableVenues.includes('Jubly Theatre')" (change)="toggleVenue('Jubly Theatre', $event)" class="w-4 h-4 accent-accent" />
-                              <span class="text-sm text-text-primary">Jubly Theatre</span>
+                              <input type="checkbox" [checked]="form.availableVenues.includes('Jubilee Theatre')" (change)="toggleVenue('Jubilee Theatre', $event)" class="w-4 h-4 accent-accent" />
+                              <span class="text-sm text-text-primary">Jubilee Theatre</span>
                             </label>
                           </div>
                         </div>
@@ -223,7 +223,7 @@ export class ServicesMgmtComponent implements OnInit {
   loadServices(): void {
     this.api.getAllServices().subscribe({
       next: (data) => this.services.set(data),
-      error: () => {},
+      error: () => { },
     });
   }
 
@@ -260,7 +260,7 @@ export class ServicesMgmtComponent implements OnInit {
   async onImageSelect(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const cropped = await this.cropper.cropImage(input.files[0], 4/3);
+      const cropped = await this.cropper.cropImage(input.files[0], 4 / 3);
       if (cropped) {
         this.selectedFile = cropped;
       }
@@ -349,7 +349,7 @@ export class ServicesMgmtComponent implements OnInit {
     if (confirm(`Delete "${service.title}"?`)) {
       this.api.deleteService(service.id).subscribe({
         next: () => this.loadServices(),
-        error: () => {},
+        error: () => { },
       });
     }
   }

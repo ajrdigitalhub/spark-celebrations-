@@ -80,7 +80,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
                           </div>
                         </div>
                         <p class="text-xs text-text-muted">
-                          @if (theatre === 'Jubly Theatre') {
+                          @if (theatre === 'Jubilee Theatre') {
                             10-15 members capacity
                           } @else if (theatre === 'Golden Cage Theatre') {
                             4-5 members capacity
@@ -183,6 +183,22 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
                     name="eventDate"
                     class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all"
                   />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-text-secondary mb-1.5">Slot Duration *</label>
+                  <select
+                    [(ngModel)]="form.slotDuration"
+                    name="slotDuration"
+                    class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all"
+                  >
+                    <option value="">Select duration</option>
+                    <option value="1 hour">1 hour</option>
+                    <option value="2 hours">2 hours</option>
+                    <option value="3 hours">3 hours</option>
+                    <option value="4 hours">4 hours</option>
+                    <option value="5+ hours">5+ hours</option>
+                  </select>
                 </div>
 
                 <div>
@@ -291,11 +307,11 @@ export class BookingModalComponent implements OnInit {
   submitting = signal(false);
   whatsappNumber = signal('919990863647');
   messageTemplate = signal('');
-  
+
   services = signal<SparkService[]>([]);
   addons = signal<Addon[]>([]);
-  theatres = ['Golden Cage Theatre', 'Jubly Theatre'];
-  
+  theatres = ['Golden Cage Theatre', 'Jubilee Theatre'];
+
   isPreSelectedService = computed(() => !!this.bookingService.selectedService());
   totalSteps = computed(() => this.isPreSelectedService() ? 4 : 5);
   stepArray = computed(() => Array.from({ length: this.totalSteps() }, (_, i) => i + 1));
@@ -308,10 +324,11 @@ export class BookingModalComponent implements OnInit {
     customerName: '',
     mobile: '',
     eventDate: '',
+    slotDuration: '',
     preferredTime: '',
     notes: '',
   };
-  
+
   filteredServices = computed(() => {
     const all = this.services();
     const t = this.form.selectedTheatre;
@@ -328,18 +345,18 @@ export class BookingModalComponent implements OnInit {
     effect(() => {
       const isOpen = this.bookingService.isOpen();
       const svc = this.bookingService.selectedService();
-      
+
       if (isOpen) {
         this.resetForm();
         if (svc) {
           this.form.selectedService = svc;
           // Auto-select theatre if service only has 1 venue configured
           if (svc.availableVenues && svc.availableVenues.length === 1) {
-             this.form.selectedTheatre = svc.availableVenues[0];
-             this.currentStep.set(2); // jump to addons (now Step 2)
+            this.form.selectedTheatre = svc.availableVenues[0];
+            this.currentStep.set(2); // jump to addons (now Step 2)
           } else {
-             // Let them select theatre, but remember service
-             this.currentStep.set(1); 
+            // Let them select theatre, but remember service
+            this.currentStep.set(1);
           }
         }
       }
@@ -354,42 +371,42 @@ export class BookingModalComponent implements OnInit {
           this.messageTemplate.set(settings.whatsapp.messageTemplate);
         }
       },
-      error: () => {},
+      error: () => { },
     });
-    
+
     this.api.getAllServices().subscribe({
       next: (data: SparkService[]) => this.services.set(data.filter(s => s.bookingEnabled && s.isActive)),
-      error: () => {},
+      error: () => { },
     });
-    
+
     this.api.getAddons().subscribe({
       next: (data: Addon[]) => this.addons.set(data.filter((a: Addon) => a.isActive)),
-      error: () => {},
+      error: () => { },
     });
   }
 
   close(): void {
     this.bookingService.close();
   }
-  
+
   onTheatreSelect(): void {
     // If the currently selected service isn't available in this theatre, clear it
     if (this.form.selectedService) {
-       const svc = this.form.selectedService;
-       if (svc.availableVenues && svc.availableVenues.length > 0 && !svc.availableVenues.includes(this.form.selectedTheatre)) {
-          this.form.selectedService = null;
-       }
+      const svc = this.form.selectedService;
+      if (svc.availableVenues && svc.availableVenues.length > 0 && !svc.availableVenues.includes(this.form.selectedTheatre)) {
+        this.form.selectedService = null;
+      }
     }
   }
-  
+
   onServiceSelect(): void {
-     // Optional logic when service is selected
+    // Optional logic when service is selected
   }
-  
+
   isAddonSelected(addon: Addon): boolean {
     return this.form.selectedAddons.some(a => a.id === addon.id);
   }
-  
+
   toggleAddon(addon: Addon, event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     if (isChecked) {
@@ -400,35 +417,35 @@ export class BookingModalComponent implements OnInit {
       this.form.selectedAddons = this.form.selectedAddons.filter(a => a.id !== addon.id);
     }
   }
-  
+
   canProceed(): boolean {
     const s = this.currentStep();
     const isPre = this.isPreSelectedService();
-    
+
     if (s === 1) return !!this.form.selectedTheatre;
     if (!isPre && s === 2) return !!this.form.selectedService;
-    
+
     // Addons step (Step 2 if pre-selected, Step 3 if not)
     if (s === (isPre ? 2 : 3)) return true;
-    
+
     // Date & Time step
-    if (s === (isPre ? 3 : 4)) return !!this.form.eventDate && !!this.form.preferredTime;
-    
+    if (s === (isPre ? 3 : 4)) return !!this.form.eventDate && !!this.form.slotDuration && !!this.form.preferredTime;
+
     // Details step
     if (s === (isPre ? 4 : 5)) return !!this.form.customerName && !!this.form.mobile;
-    
+
     return false;
   }
-  
+
   nextStep(): void {
     if (this.canProceed() && this.currentStep() < this.totalSteps()) {
-       this.currentStep.update(v => v + 1);
+      this.currentStep.update(v => v + 1);
     }
   }
-  
+
   prevStep(): void {
     if (this.currentStep() > 1) {
-       this.currentStep.update(v => v - 1);
+      this.currentStep.update(v => v - 1);
     }
   }
 
@@ -437,7 +454,7 @@ export class BookingModalComponent implements OnInit {
     this.submitting.set(true);
 
     const serviceName = this.form.selectedService?.title || 'General Inquiry';
-    const notesStr = `Theatre: ${this.form.selectedTheatre}\nAddons: ${this.form.selectedAddons.map(a => a.title).join(', ') || 'None'}\nNotes: ${this.form.notes}`;
+    const notesStr = `Duration: ${this.form.slotDuration}\nTheatre: ${this.form.selectedTheatre}\nAddons: ${this.form.selectedAddons.map(a => a.title).join(', ') || 'None'}\nNotes: ${this.form.notes}`;
 
     this.api.submitBooking({
       customerName: this.form.customerName,
@@ -489,6 +506,7 @@ export class BookingModalComponent implements OnInit {
       customerName: '',
       mobile: '',
       eventDate: '',
+      slotDuration: '',
       preferredTime: '',
       notes: '',
     };
