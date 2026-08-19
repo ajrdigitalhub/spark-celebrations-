@@ -347,6 +347,20 @@ export class BookingModalComponent implements OnInit {
       const svc = this.bookingService.selectedService();
 
       if (isOpen) {
+        // Fetch services and addons if not already loaded
+        if (this.services().length === 0) {
+          this.api.getAllServices().subscribe({
+            next: (data: SparkService[]) => this.services.set(data.filter(s => s.bookingEnabled && s.isActive)),
+            error: () => { },
+          });
+        }
+        if (this.addons().length === 0) {
+          this.api.getAddons().subscribe({
+            next: (data: Addon[]) => this.addons.set(data.filter((a: Addon) => a.isActive)),
+            error: () => { },
+          });
+        }
+
         this.resetForm();
         if (svc) {
           this.form.selectedService = svc;
@@ -371,16 +385,6 @@ export class BookingModalComponent implements OnInit {
           this.messageTemplate.set(settings.whatsapp.messageTemplate);
         }
       },
-      error: () => { },
-    });
-
-    this.api.getAllServices().subscribe({
-      next: (data: SparkService[]) => this.services.set(data.filter(s => s.bookingEnabled && s.isActive)),
-      error: () => { },
-    });
-
-    this.api.getAddons().subscribe({
-      next: (data: Addon[]) => this.addons.set(data.filter((a: Addon) => a.isActive)),
       error: () => { },
     });
   }
