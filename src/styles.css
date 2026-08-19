@@ -121,6 +121,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 
   body {
@@ -129,7 +131,7 @@
     color: var(--color-text-primary);
     line-height: 1.6;
     overflow-x: hidden;
-
+    max-width: 100%;
   }
 
   /* ── Typography ───────────────────────────────── */
