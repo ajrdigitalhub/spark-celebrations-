@@ -40,11 +40,11 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
           }
         </div>
 
-        <!-- Masonry Gallery -->
-        <div class="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+        <!-- Grid Gallery -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           @for (image of filteredImages(); track image.id) {
             <div
-              class="gallery-item break-inside-avoid rounded-xl overflow-hidden bg-bg-elevated border border-border group cursor-pointer relative"
+              class="gallery-item rounded-xl overflow-hidden bg-bg-elevated border border-border group cursor-pointer relative"
               (click)="openLightbox(image)"
             >
               <div class="aspect-[3/4] bg-bg-elevated relative">
@@ -59,10 +59,7 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
               <!-- Hover Overlay -->
               <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <div class="text-center text-white">
-                  <div class="flex justify-center mb-2"><app-icon name="search" [size]="32"></app-icon></div>
-                  @if (image.caption) {
-                    <p class="text-text-primary text-sm px-4">{{ image.caption }}</p>
-                  }
+                  <div class="flex justify-center"><app-icon name="search" [size]="32"></app-icon></div>
                 </div>
               </div>
             </div>

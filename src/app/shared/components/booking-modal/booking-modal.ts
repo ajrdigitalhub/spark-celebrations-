@@ -56,7 +56,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
           </div>
 
           <!-- Body (Scrollable) -->
-          <div class="flex-1 overflow-y-auto px-1 min-h-[40vh] custom-scrollbar pb-4">
+          <div class="flex-1 overflow-y-auto overscroll-contain px-1 min-h-[40vh] custom-scrollbar pb-4" (wheel)="$event.stopPropagation()" (touchmove)="$event.stopPropagation()">
             
             <!-- Step 1: Theatre -->
             @if (currentStep() === 1) {

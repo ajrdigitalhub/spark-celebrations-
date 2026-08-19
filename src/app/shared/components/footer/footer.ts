@@ -15,11 +15,11 @@ import { IconComponent } from '../icon/icon.component';
       <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent"></div>
 
       <div class="section-container py-16 lg:py-20">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           <!-- Brand Column -->
-          <div class="lg:col-span-1">
-            <div class="flex items-center mb-5">
-              <img src="/images/logo.png" alt="Spark Celebrations Logo" class="h-16 w-auto object-contain" style="max-height: 80px; width: auto;" />
+          <div class="lg:col-span-1 mt-6">
+            <div class="h-12 flex items-center justify-start mb-6">
+              <img src="/images/logo.png" alt="Spark Celebrations Logo" class="max-h-full w-auto object-contain" />
             </div>
             <p class="text-text-secondary text-sm leading-relaxed mb-6">
               Where every moment sparkles. Premium party theatre experiences for your most cherished celebrations.
@@ -42,7 +42,9 @@ import { IconComponent } from '../icon/icon.component';
 
           <!-- Quick Links -->
           <div>
-            <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary mb-5">Quick Links</h4>
+            <div class="h-12 flex items-center mb-6">
+              <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Quick Links</h4>
+            </div>
             <ul class="space-y-3">
               @for (link of quickLinks; track link.url) {
                 <li>
@@ -60,11 +62,15 @@ import { IconComponent } from '../icon/icon.component';
 
           <!-- Contact Info -->
           <div>
-            <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary mb-5">Get In Touch</h4>
+            <div class="h-12 flex items-center mb-6">
+              <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Get In Touch</h4>
+            </div>
             <ul class="space-y-4">
               <li class="flex items-start gap-3">
                 <app-icon name="map-pin" [size]="20" class="text-accent mt-0.5"></app-icon>
-                <span class="text-text-secondary text-sm">{{ address() }}</span>
+                <a href="https://maps.app.goo.gl/e8kYLKJD5L9J1RCm8" target="_blank" rel="noopener noreferrer" class="text-text-secondary text-sm hover:text-accent transition-colors">
+                  {{ address() }}
+                </a>
               </li>
               <li class="flex items-center gap-3">
                 <app-icon name="phone" [size]="20" class="text-accent"></app-icon>
@@ -83,7 +89,9 @@ import { IconComponent } from '../icon/icon.component';
 
           <!-- Business Hours -->
           <div>
-            <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary mb-5">Business Hours</h4>
+            <div class="h-12 flex items-center mb-6">
+              <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Business Hours</h4>
+            </div>
             <ul class="space-y-3">
               <li class="flex justify-between text-sm">
                 <span class="text-text-secondary">Mon – Fri</span>
@@ -103,7 +111,7 @@ import { IconComponent } from '../icon/icon.component';
         </div>
 
         <!-- Bottom Bar -->
-        <div class="mt-16 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6 relative">
+        <div class="mt-8 pt-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6 relative">
           <!-- Left: Copyright -->
           <div class="w-full md:flex-1 md:text-left text-center">
             <p class="text-text-muted text-xs">{{ copyright() }}</p>

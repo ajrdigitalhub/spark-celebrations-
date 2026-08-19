@@ -15,15 +15,6 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
             <div class="card group" [style.--i]="i">
               <img [src]="item.imageUrl | imageUrl" [alt]="item.caption || 'Gallery Image'" class="w-full h-full object-cover rounded-2xl">
               
-              <!-- Gradient Overlay -->
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl pointer-events-none"></div>
-              
-              <!-- Caption -->
-              @if (item.caption) {
-                <div class="absolute bottom-6 left-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0 text-center z-10">
-                  <p class="text-white font-medium text-lg drop-shadow-md">{{ item.caption }}</p>
-                </div>
-              }
             </div>
           }
         </div>

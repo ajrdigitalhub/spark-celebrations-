@@ -25,7 +25,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
           subtitle="Ready to book your celebration? We'd love to hear from you."
         />
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <!-- Contact Form -->
           <div class="contact-block glass p-8 lg:p-10 rounded-2xl">
             <h3 class="text-xl font-heading font-semibold mb-6">Send us a Message</h3>
@@ -37,7 +37,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
                   [(ngModel)]="contactForm.name"
                   name="name"
                   required
-                  class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:border-accent-border focus:outline-none transition-all"
+                  class="w-full px-4 py-3 bg-bg-elevated border border-border-light rounded-xl text-text-primary placeholder:text-text-muted hover:border-accent/40 focus:border-accent focus:outline-none transition-all"
                   placeholder="Your name"
                 />
               </div>
@@ -48,7 +48,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
                     type="email"
                     [(ngModel)]="contactForm.email"
                     name="email"
-                    class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:border-accent-border focus:outline-none transition-all"
+                    class="w-full px-4 py-3 bg-bg-elevated border border-border-light rounded-xl text-text-primary placeholder:text-text-muted hover:border-accent/40 focus:border-accent focus:outline-none transition-all"
                     placeholder="you@email.com"
                   />
                 </div>
@@ -58,7 +58,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
                     type="tel"
                     [(ngModel)]="contactForm.phone"
                     name="phone"
-                    class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:border-accent-border focus:outline-none transition-all"
+                    class="w-full px-4 py-3 bg-bg-elevated border border-border-light rounded-xl text-text-primary placeholder:text-text-muted hover:border-accent/40 focus:border-accent focus:outline-none transition-all"
                     placeholder="9876543210"
                   />
                 </div>
@@ -69,7 +69,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
                   [(ngModel)]="contactForm.message"
                   name="message"
                   rows="4"
-                  class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:border-accent-border focus:outline-none transition-all resize-none"
+                  class="w-full px-4 py-3 bg-bg-elevated border border-border-light rounded-xl text-text-primary placeholder:text-text-muted hover:border-accent/40 focus:border-accent focus:outline-none transition-all resize-none"
                   placeholder="Tell us about your celebration..."
                 ></textarea>
               </div>
@@ -135,7 +135,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
 
             <!-- Map -->
             <div class="contact-block rounded-2xl overflow-hidden border border-border h-64">
-              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3824.487575578237!2d81.52911577388531!3d16.551947626336993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a37cdd8b8089707%3A0xc0b8a09b2e3928f!2sSPARK%20Celebrations!5e0!3m2!1sen!2sin!4v1785527724790!5m2!1sen!2sin" class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3824.4875755782277!2d81.52911577388528!3d16.551947626336993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a37cdd8b8089707%3A0xc0b8a09b2e3928f!2sSPARK%20Celebrations!5e0!3m2!1sen!2sin!4v1787146394616!5m2!1sen!2sin" class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
             </div>
 
             <!-- Business Hours -->

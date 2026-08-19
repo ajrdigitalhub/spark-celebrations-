@@ -22,8 +22,8 @@ export class SeoService {
 
   updateMeta(config: SeoConfig): void {
     const fullTitle = config.title
-      ? `${config.title} | ${this.siteName}`
-      : `${this.siteName} | Premium Party Theatre Booking`;
+      ? (config.title === this.siteName ? this.siteName : `${config.title} | ${this.siteName}`)
+      : this.siteName;
 
     // Title
     this.title.setTitle(fullTitle);

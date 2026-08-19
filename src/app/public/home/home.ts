@@ -64,11 +64,7 @@ import { BookingService } from '../../core/services/booking.service';
       <!-- Hero Content -->
       <div class="relative z-10 section-container text-center">
         <div class="max-w-4xl mx-auto">
-          <!-- Badge -->
-          <div class="hero-badge inline-flex items-center gap-2 px-4 py-2 bg-accent-subtle border border-accent-border rounded-full text-accent text-sm font-medium mb-8 opacity-0 backdrop-blur-sm">
-            <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-            Premium Party Theatre Experience
-          </div>
+
 
           <!-- Main Heading -->
           <h1 class="hero-title font-heading font-bold leading-[1.05] mb-6 opacity-0 text-white drop-shadow-xl">
@@ -194,7 +190,7 @@ import { BookingService } from '../../core/services/booking.service';
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           @for (t of testimonialsList(); track t.id) {
-            <div class="testimonial-card glass p-8 relative animate-fade-in-up">
+            <div class="testimonial-card glass p-8 relative animate-fade-in-up transition-all duration-300 hover:-translate-y-2 hover:shadow-glow hover:border-accent/40 cursor-pointer group">
               <!-- Quote mark -->
               <div class="text-4xl text-accent/20 font-heading absolute top-4 right-6">"</div>
               <!-- Stars -->
@@ -292,7 +288,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.seo.updateMeta({
-      title: 'Premium Party Theatre Booking',
+      title: 'Spark Celebrations',
       description: 'Book your dream celebration at Spark Celebrations — premium party theatres for birthdays, baby showers, and special events.',
       keywords: 'party theatre, birthday party, baby shower, celebrations, events, Hyderabad',
     });

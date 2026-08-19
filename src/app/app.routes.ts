@@ -13,7 +13,7 @@ export const routes: Routes = [
         path: '',
         loadComponent: () =>
           import('./public/home/home').then((m) => m.HomeComponent),
-        title: 'Spark Celebrations | Premium Party Theatre',
+        title: 'Spark Celebrations',
       },
       {
         path: 'services',
