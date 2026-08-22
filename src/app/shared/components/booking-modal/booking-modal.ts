@@ -349,7 +349,7 @@ export class BookingModalComponent implements OnInit {
       if (isOpen) {
         // Fetch services and addons if not already loaded
         if (this.services().length === 0) {
-          this.api.getAllServices().subscribe({
+          this.api.getServices().subscribe({
             next: (data: SparkService[]) => this.services.set(data.filter(s => s.bookingEnabled && s.isActive)),
             error: () => { },
           });
