@@ -20,7 +20,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
           badge="Our Story"
           title="About"
           highlight="Spark Celebrations"
-          subtitle="From a simple dream to Hyderabad's premier party theatre experience"
+          subtitle="From a simple dream to Bhimavaram's premier party theatre experience"
         />
       </div>
     </section>
@@ -144,23 +144,23 @@ export class AboutComponent implements OnInit, AfterViewInit {
   private gsapService = inject(GsapService);
 
   timeline = [
-    { year: '23', title: 'The Spark Begins', description: 'Founded with a vision to transform celebrations in Hyderabad.' },
+    { year: '23', title: 'The Spark Begins', description: 'Founded with a vision to transform celebrations in Bhimavaram.' },
     { year: '24', title: 'First Theatre Launch', description: 'Opened our first premium private theatre room for celebrations.' },
     { year: '25', title: '500+ Events', description: 'Crossed 500 successful celebrations with 5-star reviews.' },
     { year: '26', title: 'Expanding Horizons', description: 'Growing our spaces and services to create even more magical moments.' },
   ];
 
   stats = [
-    { value: '500+', label: 'Events Hosted' },
-    { value: '10K+', label: 'Happy Guests' },
+    { value: '600+', label: 'Events Hosted' },
+    { value: '5000+', label: 'Happy Guests' },
     { value: '4.9★', label: 'Rating' },
-    { value: '100%', label: 'Happiness' },
+    { value: '1 year+', label: 'Experience' },
   ];
 
   ngOnInit(): void {
     this.seo.updateMeta({
       title: 'About Us',
-      description: 'Learn about Spark Celebrations — our journey, mission, vision, and the team behind Hyderabad\'s premium party theatre experience.',
+      description: 'Learn about Spark Celebrations — our journey, mission, vision, and the team behind Bhimavaram\'s premium party theatre experience.',
     });
   }
 

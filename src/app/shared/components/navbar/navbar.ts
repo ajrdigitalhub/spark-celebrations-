@@ -24,47 +24,49 @@ import { BookingService } from '../../../core/services/booking.service';
       <div class="section-container">
         <div class="flex items-center justify-between h-20">
           <!-- Logo -->
-          <a routerLink="/" class="flex items-center group">
-            <img src="/images/logo.png" alt="Spark Celebrations Logo" class="h-12 w-auto object-contain" style="max-height: 50px; width: auto;" />
+          <a routerLink="/" class="flex items-center group" (click)="closeMenu()">
+            <img src="/images/logo.webp" alt="Spark Celebrations Logo" class="h-12 w-auto object-contain" style="max-height: 50px; width: auto;" />
           </a>
 
           <!-- Desktop Navigation -->
           <div class="hidden md:flex items-center gap-8">
-            @for (link of navLinks; track link.path) {
-              <a
-                [routerLink]="link.path"
-                routerLinkActive="nav-link-active"
-                [routerLinkActiveOptions]="{ exact: link.path === '/' }"
-                class="nav-link text-sm font-medium tracking-wide uppercase"
-              >
-                {{ link.label }}
-              </a>
+            @for (link of navLinks; track link.label) {
+              @if (link.path) {
+                <a
+                  [routerLink]="link.path"
+                  routerLinkActive="nav-link-active"
+                  [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+                  class="nav-link text-sm font-medium tracking-wide uppercase"
+                >
+                  {{ link.label }}
+                </a>
+              }
             }
           </div>
 
           <!-- CTA + Hamburger -->
           <div class="flex items-center gap-4">
             <!-- Theme Toggle -->
+            <!--
             <button 
               (click)="themeService.toggleTheme()"
               class="w-10 h-10 rounded-full flex items-center justify-center bg-bg-glass hover:bg-bg-glass-hover border border-border-light text-text-primary transition-colors"
               aria-label="Toggle theme"
             >
               @if (themeService.isDarkTheme()) {
-                <!-- Sun Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
               } @else {
-                <!-- Moon Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
               }
             </button>
+            -->
 
-            <button
+            <!-- <button
               (click)="openBooking()"
               class="hidden lg:inline-flex btn-primary !py-2.5 !px-5 !text-sm"
             >
               <span>Book Now</span>
-            </button>
+            </button> -->
 
             <!-- Hamburger -->
             <button
@@ -96,23 +98,25 @@ import { BookingService } from '../../../core/services/booking.service';
       @if (menuOpen()) {
         <div class="md:hidden absolute inset-x-0 top-20 bg-bg-surface/95 backdrop-blur-xl border-t border-border">
           <div class="section-container py-6 flex flex-col gap-4">
-            @for (link of navLinks; track link.path) {
-              <a
-                [routerLink]="link.path"
-                routerLinkActive="text-accent"
-                [routerLinkActiveOptions]="{ exact: link.path === '/' }"
-                class="text-lg font-medium py-2 text-text-secondary hover:text-accent transition-colors"
-                (click)="closeMenu()"
-              >
-                {{ link.label }}
-              </a>
+            @for (link of navLinks; track link.label) {
+              @if (link.path) {
+                <a
+                  [routerLink]="link.path"
+                  routerLinkActive="text-accent"
+                  [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+                  class="text-lg font-medium py-2 text-text-secondary hover:text-accent transition-colors"
+                  (click)="closeMenu()"
+                >
+                  {{ link.label }}
+                </a>
+              }
             }
-            <button
+            <!-- <button
               (click)="openBooking()"
               class="btn-primary mt-4 text-center"
             >
               <span>Book Now</span>
-            </button>
+            </button> -->
           </div>
         </div>
       }
@@ -170,7 +174,7 @@ export class NavbarComponent implements OnInit {
   navLinks = [
     { label: 'Home', path: '/' },
     { label: 'Services', path: '/services' },
-    { label: 'Events', path: '/events' },
+    { label: 'Events & Decor', path: '/events' },
     { label: 'Flipbook', path: '/flipbook' },
     { label: 'Gallery', path: '/gallery' },
     { label: 'Contact', path: '/contact' },

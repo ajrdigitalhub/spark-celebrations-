@@ -1,6 +1,7 @@
 export interface HeroItem {
   id: string;
   mediaUrl: string;
+  mobileMediaUrl?: string | null;
   mediaType: 'image' | 'video';
   caption: string | null;
   isActive: boolean;
@@ -126,4 +127,17 @@ export interface UploadResponse {
   originalName: string;
   size: number;
   mimetype: string;
+}
+
+export interface EventDecorItem {
+  id: string;
+  title: string;
+  description: string | null;
+  price: string | null;
+  imageUrl: string | null;
+  type: 'event' | 'decor';
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }

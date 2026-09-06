@@ -19,7 +19,7 @@ import { ImageCropperService } from '../../../core/services/image-cropper.servic
                 [imageFile]="imageFile()!"
                 [maintainAspectRatio]="maintainAspectRatio()"
                 [aspectRatio]="aspectRatio()"
-                format="jpeg"
+                format="webp"
                 (imageCropped)="imageCropped($event)"
               ></image-cropper>
             }
@@ -65,8 +65,9 @@ export class ImageCropperModalComponent {
   confirm() {
     if (this.croppedBlob) {
       const origFile = this.imageFile();
-      const fileName = origFile ? origFile.name : 'cropped.jpg';
-      const fileType = origFile ? origFile.type : 'image/jpeg';
+      const baseName = origFile ? origFile.name.replace(/\.[^/.]+$/, "") : 'cropped';
+      const fileName = `${baseName}.webp`;
+      const fileType = 'image/webp';
       
       const file = new File([this.croppedBlob], fileName, { type: fileType });
       this.cropperService.submitCrop(file);

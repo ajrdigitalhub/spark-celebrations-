@@ -8,7 +8,12 @@ export class LenisService {
   private rafId: number | null = null;
 
   async init(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!isPlatformBrowser(this.platformId) || this.lenis) return;
+    
+    // Disable smooth scrolling on mobile devices to prevent scroll lag
+    if (window.innerWidth < 768 || matchMedia('(pointer: coarse)').matches) {
+      return;
+    }
 
     const { default: Lenis } = await import('lenis');
 
@@ -50,6 +55,7 @@ export class LenisService {
 
   destroy(): void {
     this.lenis?.destroy();
+    this.lenis = null;
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
     }

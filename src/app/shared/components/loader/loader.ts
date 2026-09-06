@@ -26,7 +26,7 @@ import { GsapService } from '../../../core/services/gsap.service';
 
         <!-- Center Logo -->
         <div class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none" #logoContainer>
-           <img src="/images/logo.png" alt="Spark Celebrations" class="w-48 md:w-64 lg:w-80 h-auto object-contain drop-shadow-2xl animate-pulse" />
+           <img src="/images/logo.webp" alt="Spark Celebrations" class="w-48 md:w-64 lg:w-80 h-auto object-contain drop-shadow-2xl" />
         </div>
 
       </div>
@@ -42,7 +42,7 @@ export class LoaderComponent implements AfterViewInit {
   private platformId = inject(PLATFORM_ID);
   private gsapService = inject(GsapService);
   private cdr = inject(ChangeDetectorRef);
-  
+
   isHidden = false;
 
   @ViewChild('leftCurtain', { static: false }) leftCurtain!: ElementRef;
@@ -52,17 +52,27 @@ export class LoaderComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
+      this.gsapService.init().then(() => {
+        const gsap = this.gsapService.gsap;
+        if (gsap && this.logoContainer) {
+          gsap.fromTo(this.logoContainer.nativeElement, 
+            { scale: 0.5, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 1.2, ease: 'power3.out' }
+          );
+        }
+      });
+
       // Wait for everything to settle, then animate out
       setTimeout(() => {
         this.animateOut();
-      }, 1200);
+      }, 1500);
     } else {
       this.isHidden = true; // Never show on SSR
     }
   }
 
   async animateOut() {
-    await this.gsapService.init(); 
+    await this.gsapService.init();
     const gsap = this.gsapService.gsap;
     if (!gsap) return;
 
@@ -79,7 +89,7 @@ export class LoaderComponent implements AfterViewInit {
     // 1. Fade out the logo
     tl.to(this.logoContainer.nativeElement, {
       opacity: 0,
-      scale: 1.2,
+      scale: 1.5,
       duration: 0.6,
       ease: 'power2.inOut'
     });

@@ -35,8 +35,8 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
 
           <!-- Header & Stepper -->
           <div class="shrink-0 mb-6">
-            <h3 class="text-2xl font-heading font-semibold mb-1">Book Your Celebration</h3>
-            <p class="text-text-secondary text-sm mb-4">Complete these {{ totalSteps() }} steps to finalize</p>
+            <h3 class="text-xl sm:text-2xl font-heading font-bold mb-1 text-accent">{{ getStepQuote() }}</h3>
+            <p class="text-text-secondary text-sm mb-4 font-medium uppercase tracking-wider">Book Your Celebration</p>
 
             <!-- Stepper UI -->
             <div class="flex items-center justify-between relative px-2">
@@ -48,7 +48,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
                 <div class="flex flex-col items-center gap-1">
                   <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
                        [class]="currentStep() >= i ? 'bg-accent text-white shadow-lg shadow-accent/30' : 'bg-bg-elevated text-text-muted border border-border'">
-                    {{ i }}
+                    {{ getStepEmoji(i) }}
                   </div>
                 </div>
               }
@@ -58,49 +58,12 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
           <!-- Body (Scrollable) -->
           <div class="flex-1 overflow-y-auto overscroll-contain px-1 min-h-[40vh] custom-scrollbar pb-4" (wheel)="$event.stopPropagation()" (touchmove)="$event.stopPropagation()">
             
-            <!-- Step 1: Theatre -->
-            @if (currentStep() === 1) {
-              <div class="space-y-4 animate-fade-in">
-                <h4 class="text-lg font-medium text-text-primary mb-4">Select Theatre</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  @for (theatre of theatres; track theatre) {
-                    <label class="relative cursor-pointer group">
-                      <input type="radio" name="theatre" class="peer sr-only" 
-                             [value]="theatre" [(ngModel)]="form.selectedTheatre" 
-                             (change)="onTheatreSelect()">
-                      <div class="p-5 border-2 rounded-xl transition-all duration-300"
-                           [class]="form.selectedTheatre === theatre ? 'border-accent bg-accent/5' : 'border-border bg-bg-elevated group-hover:border-accent/50'">
-                        <div class="flex justify-between items-center mb-2">
-                          <span class="font-semibold text-text-primary group-hover:text-accent transition-colors">{{ theatre }}</span>
-                          <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
-                               [class]="form.selectedTheatre === theatre ? 'border-accent' : 'border-border'">
-                            <div class="w-2.5 h-2.5 rounded-full bg-accent transition-transform duration-200"
-                                 [class.scale-100]="form.selectedTheatre === theatre"
-                                 [class.scale-0]="form.selectedTheatre !== theatre"></div>
-                          </div>
-                        </div>
-                        <p class="text-xs text-text-muted">
-                          @if (theatre === 'Jubilee Theatre') {
-                            10-15 members capacity
-                          } @else if (theatre === 'Golden Cage Theatre') {
-                            4-5 members capacity
-                          } @else {
-                            Premium celebration space
-                          }
-                        </p>
-                      </div>
-                    </label>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- Step 2: Service -->
-            @if (!isPreSelectedService() && currentStep() === 2) {
+            <!-- Step 1: Service -->
+            @if (!isPreSelectedService() && currentStep() === 1) {
               <div class="space-y-4 animate-fade-in">
                 <h4 class="text-lg font-medium text-text-primary mb-4">Select Package</h4>
                 @if (filteredServices().length === 0) {
-                  <p class="text-text-muted text-sm p-4 bg-bg-elevated rounded-xl">No packages available for this theatre.</p>
+                  <p class="text-text-muted text-sm p-4 bg-bg-elevated rounded-xl">No packages available.</p>
                 } @else {
                   <div class="grid grid-cols-1 gap-3">
                     @for (svc of filteredServices(); track svc.id) {
@@ -137,37 +100,115 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
               </div>
             }
 
+            <!-- Step 2: Theatre -->
+            @if (currentStep() === (isPreSelectedService() ? 1 : 2)) {
+              <div class="space-y-4 animate-fade-in">
+                <h4 class="text-lg font-medium text-text-primary mb-4">Select Theatre</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  @for (theatre of filteredTheatres(); track theatre) {
+                    <label class="relative cursor-pointer group">
+                      <input type="radio" name="theatre" class="peer sr-only" 
+                             [value]="theatre" [(ngModel)]="form.selectedTheatre" 
+                             (change)="onTheatreSelect()">
+                      <div class="p-5 border-2 rounded-xl transition-all duration-300"
+                           [class]="form.selectedTheatre === theatre ? 'border-accent bg-accent/5' : 'border-border bg-bg-elevated group-hover:border-accent/50'">
+                        <div class="flex justify-between items-center mb-2">
+                          <span class="font-semibold text-text-primary group-hover:text-accent transition-colors">{{ theatre }}</span>
+                          <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                               [class]="form.selectedTheatre === theatre ? 'border-accent' : 'border-border'">
+                            <div class="w-2.5 h-2.5 rounded-full bg-accent transition-transform duration-200"
+                                 [class.scale-100]="form.selectedTheatre === theatre"
+                                 [class.scale-0]="form.selectedTheatre !== theatre"></div>
+                          </div>
+                        </div>
+                        <p class="text-xs text-text-muted">
+                          @if (theatre === 'Jubilee Theatre') {
+                            10-15 members capacity
+                          } @else if (theatre === 'Golden Cage Theatre') {
+                            4-5 members capacity
+                          } @else {
+                            Premium celebration space
+                          }
+                        </p>
+
+                        @if (form.selectedTheatre === theatre) {
+                          <div class="mt-4 pt-4 border-t border-border/50 animate-fade-in" (click)="$event.stopPropagation()">
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">
+                              Number of Persons (Capacity: {{ theatre === 'Jubilee Theatre' ? '5 to 15' : '2 to 5' }}) *
+                            </label>
+                            <input 
+                              type="number" 
+                              [(ngModel)]="form.numberOfPersons"
+                              name="persons_{{theatre}}"
+                              [min]="theatre === 'Jubilee Theatre' ? 5 : 2"
+                              [max]="theatre === 'Jubilee Theatre' ? 15 : 5"
+                              class="w-full px-4 py-2.5 bg-bg-primary border border-accent rounded-lg text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 transition-all"
+                              placeholder="Enter number of guests"
+                            />
+                            @if (form.numberOfPersons) {
+                              @if (theatre === 'Jubilee Theatre' && (form.numberOfPersons < 5 || form.numberOfPersons > 15)) {
+                                <p class="text-xs text-red-500 mt-1">Please enter between 5 and 15 members.</p>
+                              }
+                              @if (theatre === 'Golden Cage Theatre' && (form.numberOfPersons < 2 || form.numberOfPersons > 5)) {
+                                <p class="text-xs text-red-500 mt-1">Please enter between 2 and 5 members.</p>
+                              }
+                            }
+                          </div>
+                        }
+                      </div>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+
             <!-- Step 3: Addons -->
             @if (currentStep() === (isPreSelectedService() ? 2 : 3)) {
               <div class="space-y-4 animate-fade-in">
-                <h4 class="text-lg font-medium text-text-primary mb-4">Enhance Your Experience (Optional)</h4>
-                @if (addons().length === 0) {
-                  <p class="text-text-muted text-sm">No add-ons available.</p>
-                } @else {
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    @for (addon of addons(); track addon.id) {
-                      <label class="relative cursor-pointer group">
-                        <input type="checkbox" class="peer sr-only" 
-                               [checked]="isAddonSelected(addon)"
-                               (change)="toggleAddon(addon, $event)">
-                        <div class="p-4 border-2 rounded-xl transition-all duration-300 flex items-center gap-3"
-                             [class]="isAddonSelected(addon) ? 'border-accent bg-accent/5' : 'border-border bg-bg-elevated group-hover:border-accent/50'">
-                           
-                           <div class="flex-1 min-w-0">
-                             <div class="font-medium text-text-primary text-sm truncate">{{ addon.title }}</div>
-                             <div class="text-accent text-xs font-bold mt-0.5">{{ addon.price }}</div>
-                           </div>
-                           
-                           <div class="w-5 h-5 shrink-0 rounded border flex items-center justify-center transition-colors"
-                                [class]="isAddonSelected(addon) ? 'border-accent bg-accent text-white' : 'border-border'">
-                             @if (isAddonSelected(addon)) {
-                               <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                             }
-                           </div>
-                        </div>
-                      </label>
-                    }
+                @if (isCandleLightDinner()) {
+                  <h4 class="text-lg font-medium text-text-primary mb-4">Package Details</h4>
+                  <div class="p-5 border-2 border-accent bg-accent/5 rounded-xl">
+                    <p class="text-text-primary font-medium mb-3">These are included in this package:</p>
+                    <ul class="space-y-2 text-sm text-text-secondary list-disc pl-5">
+                      <li>2 starters</li>
+                      <li>Fog entry</li>
+                      <li>Bubble entry</li>
+                      <li>1 bouquet</li>
+                      <li>Rose petals</li>
+                      <li>1 hour theatre</li>
+                      <li>1/2kg cake</li>
+                    </ul>
                   </div>
+                } @else {
+                  <h4 class="text-lg font-medium text-text-primary mb-4">Enhance Your Experience (Optional)</h4>
+                  @if (addons().length === 0) {
+                    <p class="text-text-muted text-sm">No add-ons available.</p>
+                  } @else {
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      @for (addon of addons(); track addon.id) {
+                        <label class="relative cursor-pointer group">
+                          <input type="checkbox" class="peer sr-only" 
+                                 [checked]="isAddonSelected(addon)"
+                                 (change)="toggleAddon(addon, $event)">
+                          <div class="p-4 border-2 rounded-xl transition-all duration-300 flex items-center gap-3"
+                               [class]="isAddonSelected(addon) ? 'border-accent bg-accent/5' : 'border-border bg-bg-elevated group-hover:border-accent/50'">
+                             
+                             <div class="flex-1 min-w-0">
+                               <div class="font-medium text-text-primary text-sm truncate">{{ addon.title }}</div>
+                               <div class="text-accent text-xs font-bold mt-0.5">{{ addon.price }}</div>
+                             </div>
+                             
+                             <div class="w-5 h-5 shrink-0 rounded border flex items-center justify-center transition-colors"
+                                  [class]="isAddonSelected(addon) ? 'border-accent bg-accent text-white' : 'border-border'">
+                               @if (isAddonSelected(addon)) {
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                               }
+                             </div>
+                          </div>
+                        </label>
+                      }
+                    </div>
+                  }
                 }
               </div>
             }
@@ -185,21 +226,23 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
                   />
                 </div>
 
-                <div>
-                  <label class="block text-sm font-medium text-text-secondary mb-1.5">Slot Duration *</label>
-                  <select
-                    [(ngModel)]="form.slotDuration"
-                    name="slotDuration"
-                    class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all"
-                  >
-                    <option value="">Select duration</option>
-                    <option value="1 hour">1 hour</option>
-                    <option value="2 hours">2 hours</option>
-                    <option value="3 hours">3 hours</option>
-                    <option value="4 hours">4 hours</option>
-                    <option value="5+ hours">5+ hours</option>
-                  </select>
-                </div>
+                @if (!isCandleLightDinner()) {
+                  <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1.5">Slot Duration *</label>
+                    <select
+                      [(ngModel)]="form.slotDuration"
+                      name="slotDuration"
+                      class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all"
+                    >
+                      <option value="">Select duration</option>
+                      <option value="1 hour">1 hour</option>
+                      <option value="2 hours">2 hours</option>
+                      <option value="3 hours">3 hours</option>
+                      <option value="4 hours">4 hours</option>
+                      <option value="5+ hours">5+ hours</option>
+                    </select>
+                  </div>
+                }
 
                 <div>
                   <label class="block text-sm font-medium text-text-secondary mb-1.5">Preferred Time *</label>
@@ -209,12 +252,9 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
                     class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all"
                   >
                     <option value="">Select time slot</option>
-                    <option value="10:00 AM">10:00 AM</option>
-                    <option value="12:00 PM">12:00 PM</option>
-                    <option value="02:00 PM">02:00 PM</option>
-                    <option value="04:00 PM">04:00 PM</option>
-                    <option value="06:00 PM">06:00 PM</option>
-                    <option value="08:00 PM">08:00 PM</option>
+                    @for (slot of getDynamicTimeSlots(); track slot.value) {
+                      <option [value]="slot.value">{{ slot.label }}</option>
+                    }
                   </select>
                 </div>
               </div>
@@ -230,7 +270,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
                     [(ngModel)]="form.customerName"
                     name="customerName"
                     class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:border-accent-border focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all"
-                    placeholder="John Doe"
+                    placeholder="Your Name"
                   />
                 </div>
 
@@ -241,7 +281,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
                     [(ngModel)]="form.mobile"
                     name="mobile"
                     class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:border-accent-border focus:outline-none focus:ring-1 focus:ring-accent/20 transition-all"
-                    placeholder="9876543210"
+                    placeholder="Your Number"
                   />
                 </div>
 
@@ -313,7 +353,86 @@ export class BookingModalComponent implements OnInit {
   theatres = ['Golden Cage Theatre', 'Jubilee Theatre'];
 
   isPreSelectedService = computed(() => !!this.bookingService.selectedService());
-  totalSteps = computed(() => this.isPreSelectedService() ? 4 : 5);
+  totalSteps(): number {
+    return this.isPreSelectedService() ? 4 : 5;
+  }
+
+  isCandleLightDinner(): boolean {
+    const title = this.form.selectedService?.title?.toLowerCase() || '';
+    return title.includes('candle light');
+  }
+
+  getStepQuote(): string {
+    const step = this.currentStep();
+    const total = this.totalSteps();
+    
+    if (step === total) return "Almost there! Just a few details left... 🚀";
+    
+    if (total === 5) {
+      if (step === 1) return "Let's get this party started! 🎉";
+      if (step === 2) return "Great choice! Where should we host the magic? ✨";
+      if (step === 3) return "Time to make it extra special! 🎁";
+      if (step === 4) return "Hurry up! When is the big day? 📅";
+    } else {
+      if (step === 1) return "Great choice! Where should we host the magic? ✨";
+      if (step === 2) return "Time to make it extra special! 🎁";
+      if (step === 3) return "Hurry up! When is the big day? 📅";
+    }
+    
+    return "Complete these steps to finalize";
+  }
+
+  getStepEmoji(index: number): string {
+    const emojis = ['😇', '☺️', '🥰', '😍', '❤️'];
+    return emojis[index - 1] || '😇';
+  }
+
+  getDynamicTimeSlots() {
+    const baseSlots = [
+      '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', 
+      '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM', 
+      '08:00 PM', '09:00 PM', '10:00 PM', '11:00 PM'
+    ];
+    
+    const isCandle = this.isCandleLightDinner();
+    let durationHours = 1;
+    let isPlus = false;
+    
+    if (!isCandle) {
+      if (!this.form.slotDuration) return baseSlots.map(t => ({ value: t, label: t }));
+      
+      if (this.form.slotDuration === '2 hours') durationHours = 2;
+      else if (this.form.slotDuration === '3 hours') durationHours = 3;
+      else if (this.form.slotDuration === '4 hours') durationHours = 4;
+      else if (this.form.slotDuration === '5+ hours') {
+        durationHours = 5;
+        isPlus = true;
+      }
+    }
+
+    return baseSlots.map(time => {
+      const [hourStr, minPart] = time.split(':');
+      let hour = parseInt(hourStr);
+      const ampm = minPart.split(' ')[1];
+      
+      if (ampm === 'PM' && hour !== 12) hour += 12;
+      if (ampm === 'AM' && hour === 12) hour = 0;
+      
+      let endHour = hour + durationHours;
+      let endAmpm = endHour >= 12 && endHour < 24 ? 'PM' : 'AM';
+      if (endHour >= 24) endAmpm = 'AM';
+      
+      let displayEndHour = endHour > 12 ? endHour - 12 : endHour;
+      if (displayEndHour === 0) displayEndHour = 12;
+      if (displayEndHour > 12) displayEndHour -= 12; 
+      
+      const endStr = `${displayEndHour.toString().padStart(2, '0')}:00 ${endAmpm}`;
+      
+      const label = isPlus ? `${time} onwards` : `${time} to ${endStr}`;
+      return { value: label, label: label };
+    });
+  }
+
   stepArray = computed(() => Array.from({ length: this.totalSteps() }, (_, i) => i + 1));
   currentStep = signal(1);
 
@@ -321,6 +440,7 @@ export class BookingModalComponent implements OnInit {
     selectedTheatre: '',
     selectedService: null as SparkService | null,
     selectedAddons: [] as Addon[],
+    numberOfPersons: null as number | null,
     customerName: '',
     mobile: '',
     eventDate: '',
@@ -331,13 +451,15 @@ export class BookingModalComponent implements OnInit {
 
   filteredServices = computed(() => {
     const all = this.services();
-    const t = this.form.selectedTheatre;
-    if (!t) return all;
-    return all.filter(s => {
-      // if availableVenues is null/empty, assume available everywhere, else filter
-      if (!s.availableVenues || s.availableVenues.length === 0) return true;
-      return s.availableVenues.includes(t);
-    });
+    return all;
+  });
+
+  filteredTheatres = computed(() => {
+    const svc = this.form.selectedService;
+    if (!svc || !svc.availableVenues || svc.availableVenues.length === 0) {
+      return this.theatres;
+    }
+    return svc.availableVenues;
   });
 
   constructor() {
@@ -374,7 +496,7 @@ export class BookingModalComponent implements OnInit {
           }
         }
       }
-    }, { allowSignalWrites: true });
+    });
   }
 
   ngOnInit(): void {
@@ -394,17 +516,17 @@ export class BookingModalComponent implements OnInit {
   }
 
   onTheatreSelect(): void {
-    // If the currently selected service isn't available in this theatre, clear it
-    if (this.form.selectedService) {
-      const svc = this.form.selectedService;
-      if (svc.availableVenues && svc.availableVenues.length > 0 && !svc.availableVenues.includes(this.form.selectedTheatre)) {
-        this.form.selectedService = null;
-      }
-    }
+    // Reset number of persons when theatre changes
+    this.form.numberOfPersons = null;
   }
 
   onServiceSelect(): void {
-    // Optional logic when service is selected
+    if (this.form.selectedTheatre) {
+      const svc = this.form.selectedService;
+      if (svc && svc.availableVenues && svc.availableVenues.length > 0 && !svc.availableVenues.includes(this.form.selectedTheatre)) {
+        this.form.selectedTheatre = '';
+      }
+    }
   }
 
   isAddonSelected(addon: Addon): boolean {
@@ -426,14 +548,27 @@ export class BookingModalComponent implements OnInit {
     const s = this.currentStep();
     const isPre = this.isPreSelectedService();
 
-    if (s === 1) return !!this.form.selectedTheatre;
-    if (!isPre && s === 2) return !!this.form.selectedService;
+    if (!isPre && s === 1) return !!this.form.selectedService;
+    if (s === (isPre ? 1 : 2)) {
+      if (!this.form.selectedTheatre) return false;
+      const persons = this.form.numberOfPersons;
+      if (!persons) return false;
+      if (this.form.selectedTheatre === 'Jubilee Theatre' && (persons < 5 || persons > 15)) return false;
+      if (this.form.selectedTheatre === 'Golden Cage Theatre' && (persons < 2 || persons > 5)) return false;
+      return true;
+    }
 
     // Addons step (Step 2 if pre-selected, Step 3 if not)
     if (s === (isPre ? 2 : 3)) return true;
 
     // Date & Time step
-    if (s === (isPre ? 3 : 4)) return !!this.form.eventDate && !!this.form.slotDuration && !!this.form.preferredTime;
+    if (s === (isPre ? 3 : 4)) {
+      if (this.isCandleLightDinner()) {
+        this.form.slotDuration = '1 hour';
+        return !!this.form.eventDate && !!this.form.preferredTime;
+      }
+      return !!this.form.eventDate && !!this.form.slotDuration && !!this.form.preferredTime;
+    }
 
     // Details step
     if (s === (isPre ? 4 : 5)) return !!this.form.customerName && !!this.form.mobile;
@@ -458,7 +593,7 @@ export class BookingModalComponent implements OnInit {
     this.submitting.set(true);
 
     const serviceName = this.form.selectedService?.title || 'General Inquiry';
-    const notesStr = `Duration: ${this.form.slotDuration}\nTheatre: ${this.form.selectedTheatre}\nAddons: ${this.form.selectedAddons.map(a => a.title).join(', ') || 'None'}\nNotes: ${this.form.notes}`;
+    const notesStr = `Duration: ${this.form.slotDuration}\nTheatre: ${this.form.selectedTheatre} (${this.form.numberOfPersons} members)\nAddons: ${this.form.selectedAddons.map(a => a.title).join(', ') || 'None'}\nNotes: ${this.form.notes}`;
 
     this.api.submitBooking({
       customerName: this.form.customerName,
@@ -488,7 +623,7 @@ export class BookingModalComponent implements OnInit {
       .replace('{serviceName}', serviceName)
       .replace('{customerName}', this.form.customerName)
       .replace('{mobile}', this.form.mobile)
-      .replace('{eventDate}', this.form.eventDate)
+      .replace('{eventDate}', this.formatDate(this.form.eventDate))
       .replace('{preferredTime}', this.form.preferredTime || 'Not specified')
       .replace('{notes}', finalNotes || 'None');
 
@@ -498,7 +633,16 @@ export class BookingModalComponent implements OnInit {
   }
 
   private getDefaultMessage(serviceName: string, notes: string): string {
-    return `Hello Spark Celebrations,\nI would like to book:\n*${serviceName}*\n\nCustomer Name: ${this.form.customerName}\nMobile: ${this.form.mobile}\nDate: ${this.form.eventDate}\nTime: ${this.form.preferredTime || 'Not specified'}\n\n${notes}`;
+    return `Hello Spark Celebrations,\nI would like to book:\n*${serviceName}*\n\nCustomer Name: ${this.form.customerName}\nMobile: ${this.form.mobile}\nDate: ${this.formatDate(this.form.eventDate)}\nTime: ${this.form.preferredTime || 'Not specified'}\n\n${notes}`;
+  }
+
+  private formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
   }
 
   private resetForm(): void {
@@ -507,6 +651,7 @@ export class BookingModalComponent implements OnInit {
       selectedTheatre: '',
       selectedService: null,
       selectedAddons: [],
+      numberOfPersons: null,
       customerName: '',
       mobile: '',
       eventDate: '',

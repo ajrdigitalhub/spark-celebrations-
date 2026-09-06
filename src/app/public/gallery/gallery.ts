@@ -49,7 +49,7 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
             >
               <div class="aspect-[3/4] bg-bg-elevated relative">
                 @if (image.imageUrl) {
-                  <img [src]="image.imageUrl | imageUrl" alt="" class="w-full h-full object-cover absolute inset-0">
+                  <img [src]="image.imageUrl | imageUrl" alt="" class="w-full h-full object-cover">
                 } @else {
                   <div class="w-full h-full flex items-center justify-center text-accent">
                     <app-icon [name]="getEmoji(image.category)" [size]="48"></app-icon>

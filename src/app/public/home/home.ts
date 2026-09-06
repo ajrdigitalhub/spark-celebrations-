@@ -4,6 +4,7 @@ import {
   OnDestroy,
   inject,
   signal,
+  computed,
   PLATFORM_ID,
   ViewChild,
   AfterViewInit,
@@ -14,18 +15,21 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { GsapService } from '../../core/services/gsap.service';
 import { SeoService } from '../../core/services/seo.service';
-import { SparkService, Testimonial, SiteSettings, GalleryImage, HeroItem } from '../../core/models/index';
+import { SparkService, Testimonial, SiteSettings, GalleryImage, HeroItem, EventDecorItem } from '../../core/models/index';
 import { SectionHeadingComponent } from '../../shared/components/section-heading/section-heading';
 import { BookingModalComponent } from '../../shared/components/booking-modal/booking-modal';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { GalleryCoverflowComponent } from '../../shared/components/gallery-coverflow/gallery-coverflow';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 import { BookingService } from '../../core/services/booking.service';
+import { EventBookingService } from '../../core/services/event-booking.service';
+
+import { CursorSparkleComponent } from '../../shared/components/cursor-sparkle/cursor-sparkle.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, SectionHeadingComponent, IconComponent, GalleryCoverflowComponent, ImageUrlPipe],
+  imports: [CommonModule, RouterLink, SectionHeadingComponent, IconComponent, GalleryCoverflowComponent, ImageUrlPipe, CursorSparkleComponent],
   template: `
     <!-- ═══════════ HERO SECTION ═══════════ -->
     <section class="relative min-h-screen flex items-center justify-center overflow-hidden" id="hero">
@@ -41,9 +45,23 @@ import { BookingService } from '../../core/services/booking.service';
             [class.z-0]="i !== currentHeroIndex()"
           >
             @if (item.mediaType === 'image') {
-              <img [src]="item.mediaUrl | imageUrl" class="w-full h-full object-cover">
+              <picture class="w-full h-full block">
+                @if (item.mobileMediaUrl) {
+                  <source media="(max-width: 768px)" [srcset]="item.mobileMediaUrl | imageUrl">
+                }
+                @if (i === 0) {
+                  <img [src]="item.mediaUrl | imageUrl" [alt]="item.caption || 'Hero Banner'" class="w-full h-full object-cover" loading="eager" fetchpriority="high">
+                } @else {
+                  <img [src]="item.mediaUrl | imageUrl" [alt]="item.caption || 'Hero Banner'" class="w-full h-full object-cover">
+                }
+              </picture>
             } @else {
-              <video [src]="item.mediaUrl | imageUrl" class="w-full h-full object-cover" muted loop playsinline autoplay></video>
+              @if (item.mobileMediaUrl) {
+                <video [src]="item.mobileMediaUrl | imageUrl" class="w-full h-full object-cover md:hidden" muted loop playsinline autoplay></video>
+                <video [src]="item.mediaUrl | imageUrl" class="w-full h-full object-cover hidden md:block" muted loop playsinline autoplay></video>
+              } @else {
+                <video [src]="item.mediaUrl | imageUrl" class="w-full h-full object-cover" muted loop playsinline autoplay></video>
+              }
             }
             <!-- Dark Overlay for Readability -->
             <div class="absolute inset-0 bg-black/60"></div>
@@ -53,9 +71,9 @@ import { BookingService } from '../../core/services/booking.service';
         <!-- Fallback Default Background if no items -->
         @if (activeHeroItems().length === 0) {
           <!-- Gradient Orbs -->
-          <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-[120px] animate-float"></div>
-          <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/8 rounded-full blur-[100px] animate-float" style="animation-delay: -3s;"></div>
-          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/3 rounded-full blur-[150px]"></div>
+          <div class="hidden md:block absolute top-1/4 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-[120px] animate-float"></div>
+          <div class="hidden md:block absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/8 rounded-full blur-[100px] animate-float" style="animation-delay: -3s;"></div>
+          <div class="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/3 rounded-full blur-[150px]"></div>
           <!-- Canvas for particles -->
           <canvas #particleCanvas class="absolute inset-0 w-full h-full opacity-40"></canvas>
         }
@@ -91,7 +109,13 @@ import { BookingService } from '../../core/services/booking.service';
               class="btn-primary !py-4 !px-8 !text-base !rounded-xl shadow-2xl shadow-accent/20"
               (click)="bookingService.open()"
             >
-              <span>Book Your Celebration</span>
+              <span>Book your celebrations</span>
+            </button>
+            <button
+              class="btn-primary !py-4 !px-8 !text-base !rounded-xl shadow-2xl shadow-accent/20 bg-purple-600 hover:bg-purple-700 border-purple-500"
+              (click)="eventBookingService.open()"
+            >
+              <span>Book Events & Decors</span>
             </button>
             <a routerLink="/services" class="btn-ghost !py-4 !px-8 !text-base !rounded-xl !text-white hover:!bg-white/10 backdrop-blur-sm border border-white/20">
               Explore Services →
@@ -117,9 +141,24 @@ import { BookingService } from '../../core/services/booking.service';
       </div>
     </section>
 
+    <!-- ═══════════ SCROLLING RIBBON ═══════════ -->
+    @if (ribbonNames().length > 0) {
+      <section class="ribbon-section relative overflow-hidden py-5 bg-bg-primary border-y border-border/30">
+        <div class="ribbon-track">
+          @for (name of ribbonNamesDoubled(); track $index) {
+            <span class="ribbon-item">
+              <span class="text-accent">★</span>
+              <span class="ribbon-text">{{ name }}</span>
+            </span>
+          }
+        </div>
+      </section>
+    }
 
     <!-- ═══════════ GALLERY COVERFLOW ═══════════ -->
-    <section class="py-section relative bg-bg-primary overflow-hidden" id="gallery-carousel">
+    <section class="pt-16 md:pt-24 pb-8 md:pb-12 relative bg-bg-primary overflow-hidden" id="gallery-carousel">
+      <!-- Orbs for background depth -->
+      <div class="hidden md:block absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-[120px] pointer-events-none"></div>
       <div class="section-container">
         <app-section-heading
           badge="Our Gallery"
@@ -152,7 +191,7 @@ import { BookingService } from '../../core/services/booking.service';
               <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-accent-subtle border border-accent-border flex items-center justify-center group-hover:scale-110 transition-transform duration-500 text-accent">
                 <app-icon [name]="item.icon" [size]="32"></app-icon>
               </div>
-              <h4 class="text-lg font-heading font-semibold mb-2">{{ item.title }}</h4>
+              <h3 class="text-lg font-heading font-semibold mb-2">{{ item.title }}</h3>
               <p class="text-text-secondary text-sm">{{ item.description }}</p>
             </div>
           }
@@ -231,6 +270,8 @@ import { BookingService } from '../../core/services/booking.service';
         </div>
       </div>
     </section>
+    
+    <app-cursor-sparkle />
   `,
   styles: `
     .line-clamp-2 {
@@ -251,6 +292,46 @@ import { BookingService } from '../../core/services/booking.service';
       border-color: var(--color-accent-border);
       box-shadow: var(--shadow-glow);
     }
+
+    /* ── Ribbon Marquee ── */
+    .ribbon-section {
+      mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+      -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+    }
+
+    .ribbon-track {
+      display: flex;
+      width: max-content;
+      animation: ribbon-scroll 30s linear infinite;
+    }
+
+    .ribbon-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 32px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .ribbon-text {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-secondary);
+      transition: color 0.3s;
+    }
+
+    .ribbon-item:hover .ribbon-text {
+      color: var(--color-accent);
+    }
+
+    @keyframes ribbon-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
   `,
 })
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -259,9 +340,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private api = inject(ApiService);
   private gsapService = inject(GsapService);
   public bookingService = inject(BookingService);
+  public eventBookingService = inject(EventBookingService);
   private seo = inject(SeoService);
 
   services = signal<SparkService[]>([]);
+  eventDecorItems = signal<EventDecorItem[]>([]);
   testimonialsList = signal<Testimonial[]>([]);
   galleryItems = signal<GalleryImage[]>([]);
   
@@ -269,6 +352,15 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   activeHeroItems = signal<HeroItem[]>([]);
   currentHeroIndex = signal(0);
   private heroInterval: any;
+
+  // Ribbon
+  ribbonNames = computed(() => {
+    const sNames = this.services().map(s => s.title);
+    const eNames = this.eventDecorItems().map(e => e.title);
+    return [...sNames, ...eNames].filter(n => !!n);
+  });
+  // Double the list so the animation loops seamlessly
+  ribbonNamesDoubled = computed(() => [...this.ribbonNames(), ...this.ribbonNames()]);
 
 
 
@@ -280,22 +372,27 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   stats = [
-    { prefix: '', current: 500, suffix: '+', label: 'Events Hosted', target: 500 },
-    { prefix: '', current: 10000, suffix: '+', label: 'Happy Guests', target: 10000 },
+    { prefix: '', current: 600, suffix: '+', label: 'Events Hosted', target: 600 },
+    { prefix: '', current: 5000, suffix: '+', label: 'Happy Guests', target: 5000 },
     { prefix: '', current: 4.9, suffix: '★', label: 'Average Rating', target: 4.9 },
-    { prefix: '', current: 3, suffix: '+', label: 'Years of Joy', target: 3 },
+    { prefix: '', current: 1, suffix: '+', label: 'Years of Joy', target: 1 },
   ];
 
   ngOnInit(): void {
     this.seo.updateMeta({
       title: 'Spark Celebrations',
       description: 'Book your dream celebration at Spark Celebrations — premium party theatres for birthdays, baby showers, and special events.',
-      keywords: 'party theatre, birthday party, baby shower, celebrations, events, Hyderabad',
+      keywords: 'private party theatre in bhimavaram, premium theatre in bhimavaram, birthday party venue bhimavaram, baby shower celebrations bhimavaram, private movie screening bhimavaram, event spaces in bhimavaram, spark celebrations bhimavaram',
     });
     this.seo.setOrganizationSchema();
 
     this.api.getServices().subscribe({
       next: (data) => this.services.set(data),
+      error: () => {},
+    });
+
+    this.api.getEventDecors().subscribe({
+      next: (data) => this.eventDecorItems.set(data),
       error: () => {},
     });
 
@@ -334,8 +431,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    tl.fromTo('.hero-badge', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' })
-      .fromTo('.hero-title', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.3')
+    tl.fromTo('.hero-title', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' })
       .fromTo('.hero-subtitle', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, '-=0.4')
       .fromTo('.hero-ctas', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, '-=0.3');
 
@@ -393,6 +489,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initParticles(): void {
+    if (!isPlatformBrowser(this.platformId) || window.innerWidth < 768) return; // Skip heavy canvas on mobile
+    
     const canvas = document.querySelector('#hero canvas') as HTMLCanvasElement;
     if (!canvas) return;
 

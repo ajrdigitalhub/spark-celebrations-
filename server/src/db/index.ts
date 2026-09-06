@@ -3,16 +3,28 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema.js';
 
-// Use transaction pooler (port 6543) for runtime — must disable prepared statements
-const connectionString = process.env.DATABASE_URL!;
+let _db: ReturnType<typeof drizzle> | null = null;
 
-const client = postgres(connectionString, {
-  prepare: false, // Required for Supabase transaction pooler
-  max: 10,
-  idle_timeout: 20,
-  connect_timeout: 10,
+export function getDb() {
+  if (!_db) {
+    const connectionString = process.env.DATABASE_URL!;
+    const client = postgres(connectionString, {
+      prepare: false,
+      max: 10,
+      idle_timeout: 20,
+      connect_timeout: 10,
+    });
+    _db = drizzle(client, { schema });
+  }
+  return _db;
+}
+
+export const db = new Proxy({} as ReturnType<typeof drizzle>, {
+  get(_target, prop) {
+    const instance = getDb();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  }
 });
-
-export const db = drizzle(client, { schema });
 
 export default db;

@@ -14,16 +14,18 @@ import { IconComponent } from '../icon/icon.component';
       <!-- Gradient separator -->
       <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent"></div>
 
-      <div class="section-container py-16 lg:py-20">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
+      <div class="section-container">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-16 pt-12 lg:pt-20">
           <!-- Brand Column -->
-          <div class="lg:col-span-1 mt-6">
-            <div class="h-12 flex items-center justify-start mb-6">
-              <img src="/images/logo.png" alt="Spark Celebrations Logo" class="max-h-full w-auto object-contain" />
+          <div class="lg:col-span-1 mt-2">
+            <div class="flex flex-row items-center gap-4 mb-6 md:flex-col md:items-start md:gap-0">
+              <div class="shrink-0 w-28 sm:w-32 md:w-auto md:mb-6">
+                <img src="/images/logo.webp" alt="Spark Celebrations Logo" class="w-full h-auto md:h-12 md:w-auto object-contain" />
+              </div>
+              <p class="text-text-secondary text-xs md:text-sm leading-relaxed flex-1">
+                Where every moment sparkles. Premium party theatre experiences for your most cherished celebrations.
+              </p>
             </div>
-            <p class="text-text-secondary text-sm leading-relaxed mb-6">
-              Where every moment sparkles. Premium party theatre experiences for your most cherished celebrations.
-            </p>
             <!-- Social Icons -->
             <div class="flex gap-3">
               @for (social of socials(); track social.name) {
@@ -41,9 +43,9 @@ import { IconComponent } from '../icon/icon.component';
           </div>
 
           <!-- Quick Links -->
-          <div>
-            <div class="h-12 flex items-center mb-6">
-              <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Quick Links</h4>
+          <div class="hidden md:block">
+            <div class="mb-4">
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Quick Links</h3>
             </div>
             <ul class="space-y-3">
               @for (link of quickLinks; track link.url) {
@@ -62,8 +64,8 @@ import { IconComponent } from '../icon/icon.component';
 
           <!-- Contact Info -->
           <div>
-            <div class="h-12 flex items-center mb-6">
-              <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Get In Touch</h4>
+            <div class="mb-4">
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Get In Touch</h3>
             </div>
             <ul class="space-y-4">
               <li class="flex items-start gap-3">
@@ -89,8 +91,8 @@ import { IconComponent } from '../icon/icon.component';
 
           <!-- Business Hours -->
           <div>
-            <div class="h-12 flex items-center mb-6">
-              <h4 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Business Hours</h4>
+            <div class="mb-4">
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-text-primary">Business Hours</h3>
             </div>
             <ul class="space-y-3">
               <li class="flex justify-between text-sm">
@@ -111,7 +113,7 @@ import { IconComponent } from '../icon/icon.component';
         </div>
 
         <!-- Bottom Bar -->
-        <div class="mt-8 pt-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6 relative">
+        <div class="mt-8 pt-6 pb-14 md:pb-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6 relative">
           <!-- Left: Copyright -->
           <div class="w-full md:flex-1 md:text-left text-center">
             <p class="text-text-muted text-xs">{{ copyright() }}</p>
@@ -148,7 +150,7 @@ export class FooterComponent implements OnInit {
 
   phone = signal('+91 9990863647');
   email = signal('hello@sparkcelebrations.com');
-  address = signal('Hyderabad, Telangana, India');
+  address = signal('Bhimavaram, Andhra Pradesh, India');
   copyright = signal('© 2026 Spark Celebrations. All rights reserved.');
   whatsappNumber = signal('919990863647');
 

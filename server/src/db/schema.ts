@@ -100,6 +100,7 @@ export const siteSettings = pgTable('site_settings', {
 export const heroItems = pgTable('hero_items', {
   id: uuid('id').primaryKey().defaultRandom(),
   mediaUrl: text('media_url').notNull(),
+  mobileMediaUrl: text('mobile_media_url'),
   mediaType: varchar('media_type', { length: 20 }).default('image').notNull(),
   caption: text('caption'),
   isActive: boolean('is_active').default(true).notNull(),
@@ -123,3 +124,18 @@ export const addons = pgTable('addons', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ─────────────────────────────────────────────
+// Event & Decor Items
+// ─────────────────────────────────────────────
+export const eventDecors = pgTable('event_decors', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: text('title').notNull(),
+  description: text('description'),
+  price: text('price'),
+  imageUrl: text('image_url'),
+  type: varchar('type', { length: 20 }).default('event').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});

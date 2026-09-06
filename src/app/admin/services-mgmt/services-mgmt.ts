@@ -28,6 +28,7 @@ import { firstValueFrom } from 'rxjs';
             <thead>
               <tr class="border-b border-border">
                 <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Service</th>
+                <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Order</th>
                 <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Price</th>
                 <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Status</th>
                 <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Booking</th>
@@ -49,6 +50,7 @@ import { firstValueFrom } from 'rxjs';
                       <span class="text-sm font-medium text-text-primary">{{ service.title }}</span>
                     </div>
                   </td>
+                  <td class="px-6 py-4 text-sm font-medium text-text-primary">{{ service.sortOrder }}</td>
                   <td class="px-6 py-4 text-sm text-text-secondary">{{ service.price || '—' }}</td>
                   <td class="px-6 py-4">
                     <span class="px-2.5 py-1 rounded-full text-xs font-medium" [class]="service.isActive ? 'bg-success/10 text-success' : 'bg-error/10 text-error'">
@@ -116,9 +118,13 @@ import { firstValueFrom } from 'rxjs';
                             <input type="text" [(ngModel)]="form.price" name="price" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" placeholder="₹4,999" />
                           </div>
                           <div>
-                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Features</label>
-                            <input type="text" [(ngModel)]="form.featuresStr" name="features" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" placeholder="Comma-separated" />
+                            <label class="block text-sm font-medium text-text-secondary mb-1.5">Sort Order</label>
+                            <input type="number" [(ngModel)]="form.sortOrder" name="sortOrder" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" placeholder="0" />
                           </div>
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-text-secondary mb-1.5">Features</label>
+                          <input type="text" [(ngModel)]="form.featuresStr" name="features" class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary focus:border-accent-border focus:outline-none transition-all" placeholder="Comma-separated" />
                         </div>
                       </div>
 
@@ -129,6 +135,17 @@ import { firstValueFrom } from 'rxjs';
                           <div class="w-full px-4 py-3 bg-bg-elevated border border-border rounded-xl">
                             <input type="file" accept="image/*" (change)="onImageSelect($event)" class="w-full text-text-primary text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:bg-accent/10 file:text-accent file:font-medium hover:file:bg-accent/20 cursor-pointer" />
                           </div>
+                          @if (selectedFileUrl()) {
+                            <div class="mt-3 relative w-32 h-24 rounded-lg overflow-hidden border border-border">
+                              <img [src]="selectedFileUrl()" alt="Preview" class="w-full h-full object-cover">
+                              <div class="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[10px] text-center py-1">New Image</div>
+                            </div>
+                          } @else if (editing() && form.imageUrl) {
+                            <div class="mt-3 relative w-32 h-24 rounded-lg overflow-hidden border border-border">
+                              <img [src]="form.imageUrl | imageUrl" alt="Current" class="w-full h-full object-cover">
+                              <div class="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[10px] text-center py-1">Current Image</div>
+                            </div>
+                          }
                         </div>
                         <div>
                           <label class="block text-sm font-medium text-text-secondary mb-1.5">Gallery Images (Multiple)</label>
@@ -192,18 +209,22 @@ export class ServicesMgmtComponent implements OnInit {
   editing = signal(false);
   saving = signal(false);
   editId = '';
-  selectedFile: File | null = null;
+  selectedFile = signal<File | null>(null);
 
   form = {
     title: '',
     description: '',
     price: '',
+    sortOrder: 0,
     featuresStr: '',
     isActive: true,
     bookingEnabled: true,
     galleryUrls: [] as string[],
     availableVenues: [] as string[],
+    imageUrl: ''
   };
+
+  selectedFileUrl = signal<string | null>(null);
 
   toggleVenue(venue: string, event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
@@ -229,8 +250,9 @@ export class ServicesMgmtComponent implements OnInit {
 
   openForm(): void {
     this.editing.set(false);
-    this.form = { title: '', description: '', price: '', featuresStr: '', isActive: true, bookingEnabled: true, galleryUrls: [], availableVenues: [] };
-    this.selectedFile = null;
+    this.form = { title: '', description: '', price: '', sortOrder: 0, featuresStr: '', isActive: true, bookingEnabled: true, galleryUrls: [], availableVenues: [], imageUrl: '' };
+    this.clearPreview();
+    this.selectedFile.set(null);
     this.selectedGalleryFiles = [];
     this.formOpen.set(true);
   }
@@ -242,19 +264,30 @@ export class ServicesMgmtComponent implements OnInit {
       title: service.title,
       description: service.description || '',
       price: service.price || '',
+      sortOrder: service.sortOrder || 0,
       featuresStr: service.features?.join(', ') || '',
       isActive: service.isActive,
       bookingEnabled: service.bookingEnabled,
       galleryUrls: service.galleryUrls || [],
       availableVenues: service.availableVenues || [],
+      imageUrl: service.imageUrl || ''
     };
-    this.selectedFile = null;
+    this.clearPreview();
+    this.selectedFile.set(null);
     this.selectedGalleryFiles = [];
     this.formOpen.set(true);
   }
 
   closeForm(): void {
+    this.clearPreview();
     this.formOpen.set(false);
+  }
+
+  private clearPreview() {
+    if (this.selectedFileUrl()) {
+      URL.revokeObjectURL(this.selectedFileUrl()!);
+      this.selectedFileUrl.set(null);
+    }
   }
 
   async onImageSelect(event: Event): Promise<void> {
@@ -262,7 +295,9 @@ export class ServicesMgmtComponent implements OnInit {
     if (input.files && input.files.length > 0) {
       const cropped = await this.cropper.cropImage(input.files[0], 4 / 3);
       if (cropped) {
-        this.selectedFile = cropped;
+        this.selectedFile.set(cropped);
+        this.clearPreview();
+        this.selectedFileUrl.set(URL.createObjectURL(cropped));
       }
       input.value = ''; // Reset input
     }
@@ -296,9 +331,10 @@ export class ServicesMgmtComponent implements OnInit {
     let newGalleryUrls: string[] = [...(this.form.galleryUrls || [])];
 
     // Upload main image if selected
-    if (this.selectedFile) {
+    const fileToUpload = this.selectedFile();
+    if (fileToUpload) {
       try {
-        const res = await firstValueFrom(this.api.uploadFile(this.selectedFile));
+        const res = await firstValueFrom(this.api.uploadFile(fileToUpload));
         imageUrl = res?.url;
       } catch (e) {
         console.error('Image upload failed', e);
@@ -324,6 +360,7 @@ export class ServicesMgmtComponent implements OnInit {
       description: this.form.description || null,
       features: this.form.featuresStr ? this.form.featuresStr.split(',').map((f) => f.trim()) : [],
       price: this.form.price || null,
+      sortOrder: this.form.sortOrder || 0,
       isActive: this.form.isActive,
       bookingEnabled: this.form.bookingEnabled,
       galleryUrls: newGalleryUrls,

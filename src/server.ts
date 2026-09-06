@@ -35,15 +35,39 @@ app.use(
   }),
 );
 
+const ssrCache = new Map<string, { html: string; timestamp: number }>();
+const CACHE_TTL = 60 * 1000; // 1 minute
+
 /**
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.url.startsWith('/api') && !req.url.startsWith('/admin')) {
+    const cached = ssrCache.get(req.url);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      res.send(cached.html);
+      return;
+    }
+  }
+
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then(async (response) => {
+      if (response) {
+        if (req.method === 'GET' && response.status === 200 && !req.url.startsWith('/admin')) {
+          try {
+            const resClone = response.clone();
+            const html = await resClone.text();
+            ssrCache.set(req.url, { html, timestamp: Date.now() });
+          } catch (e) {
+            console.error('SSR Cache Error:', e);
+          }
+        }
+        writeResponseToNodeResponse(response, res);
+      } else {
+        next();
+      }
+    })
     .catch(next);
 });
 

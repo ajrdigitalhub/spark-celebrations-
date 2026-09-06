@@ -10,14 +10,18 @@ import { SectionHeadingComponent } from '../../shared/components/section-heading
 import { BookingModalComponent } from '../../shared/components/booking-modal/booking-modal';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+import { AnimatedHeartComponent } from '../../shared/components/animated-heart/animated-heart.component';
 
 @Component({
   selector: 'app-services',
   standalone: true,
-  imports: [CommonModule, RouterLink, SectionHeadingComponent, IconComponent, ImageUrlPipe],
+  imports: [CommonModule, RouterLink, SectionHeadingComponent, IconComponent, ImageUrlPipe, AnimatedHeartComponent],
   template: `
+    <!-- Crystal Heart Background -->
+    <app-animated-heart class="fixed inset-0 z-0 opacity-20 pointer-events-none mix-blend-screen"></app-animated-heart>
+
     <!-- Hero Banner -->
-    <section class="pt-32 pb-16 relative">
+    <section class="pt-32 pb-16 relative z-10">
       <div class="absolute inset-0">
         <div class="absolute top-20 right-20 w-80 h-80 bg-accent/5 rounded-full blur-[100px]"></div>
       </div>
@@ -32,13 +36,13 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
     </section>
 
     <!-- Services Grid -->
-    <section class="pb-section relative">
+    <section class="pb-section relative z-10">
       <div class="section-container">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
-          @for (service of services(); track service.id) {
+          @for (service of services(); track service.id; let i = $index) {
             <a [routerLink]="['/services', service.id]" class="service-card card p-0 group block cursor-pointer">
               <!-- Image Area -->
-              <div class="h-48 bg-bg-elevated relative overflow-hidden flex items-center justify-center">
+              <div class="h-64 md:h-48 bg-bg-elevated relative overflow-hidden flex items-center justify-center">
                 @if (service.imageUrl && service.imageUrl.trim().length > 0) {
                   <img [src]="service.imageUrl | imageUrl" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out absolute inset-0">
                 } @else {
@@ -105,7 +109,7 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
     }
   `,
 })
-export class ServicesComponent implements OnInit, AfterViewInit {
+export class ServicesComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private api = inject(ApiService);
   private seo = inject(SeoService);
@@ -124,17 +128,6 @@ export class ServicesComponent implements OnInit, AfterViewInit {
       next: (data) => this.services.set(data),
       error: () => {},
     });
-  }
-
-  async ngAfterViewInit(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) return;
-    await this.gsapService.init();
-    setTimeout(() => {
-      const cards = document.querySelectorAll('.service-card');
-      if (cards.length) {
-        this.gsapService.staggerReveal(Array.from(cards) as HTMLElement[], { stagger: 0.2 });
-      }
-    }, 300);
   }
 
   openBooking(service: SparkService): void {

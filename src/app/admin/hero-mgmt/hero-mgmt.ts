@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { ApiService } from '../../core/services/api.service';
 import { HeroItem } from '../../core/models';
 import { IconComponent } from '../../shared/components/icon/icon.component';
@@ -10,7 +11,7 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 @Component({
   selector: 'app-hero-mgmt',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent, ImageUrlPipe],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent, ImageUrlPipe, ImageCropperComponent],
   template: `
     <div class="p-6">
       <div class="flex justify-between items-center mb-8">
@@ -92,8 +93,8 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
     @if (showModal()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeModal()"></div>
-        <div class="relative bg-bg-elevated rounded-2xl w-full max-w-lg shadow-2xl border border-border animate-fade-in-up">
-          <div class="flex justify-between items-center p-6 border-b border-border">
+        <div class="relative bg-bg-elevated rounded-2xl w-full max-w-lg shadow-2xl border border-border animate-fade-in-up max-h-[90vh] flex flex-col">
+          <div class="flex justify-between items-center p-6 border-b border-border shrink-0">
             <h2 class="text-xl font-heading font-semibold text-text-primary">
               {{ editingId() ? 'Edit Hero Item' : 'Add Hero Item' }}
             </h2>
@@ -102,10 +103,10 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
             </button>
           </div>
 
-          <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="p-6">
+          <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="p-6 overflow-y-auto flex-1 min-h-0">
             <!-- Media Upload -->
             <div class="mb-6">
-              <label class="block text-sm font-medium text-text-secondary mb-2">Media File (Image or Video)</label>
+              <label class="block text-sm font-medium text-text-secondary mb-2">Desktop Media File (Landscape)</label>
               
               @if (previewUrl()) {
                 <div class="relative aspect-video rounded-xl overflow-hidden bg-black mb-3 group">
@@ -126,6 +127,58 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
                   <p class="text-text-muted text-xs">Supports JPG, PNG, WEBP, MP4</p>
                   
                   @if (uploading()) {
+                    <div class="absolute inset-0 bg-bg-elevated/90 flex flex-col items-center justify-center rounded-xl">
+                      <div class="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin mb-2"></div>
+                      <span class="text-sm font-medium text-accent">Uploading...</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Mobile Media Upload -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-text-secondary mb-2">Mobile Media File (Portrait) - Optional</label>
+              
+              @if (imageChangedEvent) {
+                <div class="mb-4 bg-black rounded-xl overflow-hidden p-4 border border-border">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-white font-medium">Crop Portrait Image (9:16)</h3>
+                    <button type="button" (click)="cancelCrop()" class="text-white/60 hover:text-white px-2 py-1">Cancel</button>
+                  </div>
+                  <div class="h-64 sm:h-80 w-full relative">
+                    <image-cropper
+                      [imageChangedEvent]="imageChangedEvent"
+                      [maintainAspectRatio]="true"
+                      [aspectRatio]="9 / 16"
+                      format="webp"
+                      (imageCropped)="imageCropped($event)"
+                      style="max-height: 100%; max-width: 100%;"
+                    ></image-cropper>
+                  </div>
+                  <div class="mt-4 flex justify-end">
+                    <button type="button" (click)="saveCrop()" class="btn-primary !py-2 !px-4 !text-sm">Save Crop</button>
+                  </div>
+                </div>
+              } @else if (mobilePreviewUrl()) {
+                <div class="relative aspect-[9/16] rounded-xl overflow-hidden bg-black mb-3 group max-h-64 mx-auto w-fit">
+                  @if (itemForm.value.mediaType === 'image') {
+                    <img [src]="mobilePreviewUrl()" class="w-full h-full object-contain">
+                  } @else {
+                    <video [src]="mobilePreviewUrl()" class="w-full h-full object-contain" controls></video>
+                  }
+                  <button type="button" (click)="removeMobileMedia()" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <app-icon name="x" [size]="16"></app-icon>
+                  </button>
+                </div>
+              } @else {
+                <div class="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-accent hover:bg-accent/5 transition-colors cursor-pointer relative">
+                  <input type="file" (change)="onMobileFileSelected($event)" accept="image/*,video/mp4,video/webm" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                  <app-icon name="upload" [size]="32" class="text-accent mx-auto mb-3"></app-icon>
+                  <p class="text-text-primary font-medium mb-1">Click or drag mobile file to upload</p>
+                  <p class="text-text-muted text-xs">Supports JPG, PNG, WEBP, MP4</p>
+                  
+                  @if (uploadingMobile()) {
                     <div class="absolute inset-0 bg-bg-elevated/90 flex flex-col items-center justify-center rounded-xl">
                       <div class="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin mb-2"></div>
                       <span class="text-sm font-medium text-accent">Uploading...</span>
@@ -185,9 +238,17 @@ export class HeroMgmtComponent implements OnInit {
   uploading = signal(false);
   previewUrl = signal<string | null>(null);
   selectedFile = signal<File | null>(null);
+  mobilePreviewUrl = signal<string | null>(null);
+  selectedMobileFile = signal<File | null>(null);
+  uploadingMobile = signal(false);
+
+  imageChangedEvent: any = '';
+  croppedBlob: Blob | null | undefined = null;
+  croppedObjectUrl: string | null | undefined = null;
 
   itemForm: FormGroup = this.fb.group({
     mediaUrl: [''],
+    mobileMediaUrl: [''],
     mediaType: ['image', Validators.required],
     caption: [''],
     isActive: [true]
@@ -213,16 +274,20 @@ export class HeroMgmtComponent implements OnInit {
       this.editingId.set(item.id);
       this.itemForm.patchValue({
         mediaUrl: item.mediaUrl,
+        mobileMediaUrl: item.mobileMediaUrl,
         mediaType: item.mediaType,
         caption: item.caption,
         isActive: item.isActive
       });
       this.previewUrl.set(this.api.getImageUrl(item.mediaUrl));
+      this.mobilePreviewUrl.set(item.mobileMediaUrl ? this.api.getImageUrl(item.mobileMediaUrl) : null);
     } else {
       this.editingId.set(null);
       this.itemForm.reset({ isActive: true, mediaType: 'image' });
       this.previewUrl.set(null);
       this.selectedFile.set(null);
+      this.mobilePreviewUrl.set(null);
+      this.selectedMobileFile.set(null);
     }
     this.showModal.set(true);
   }
@@ -232,6 +297,9 @@ export class HeroMgmtComponent implements OnInit {
     this.itemForm.reset();
     this.previewUrl.set(null);
     this.selectedFile.set(null);
+    this.mobilePreviewUrl.set(null);
+    this.selectedMobileFile.set(null);
+    this.cancelCrop();
   }
 
   onFileSelected(event: any) {
@@ -250,9 +318,10 @@ export class HeroMgmtComponent implements OnInit {
     this.itemForm.patchValue({ mediaType: isVideo ? 'video' : 'image' });
 
     // Create local preview
-    const reader = new FileReader();
-    reader.onload = (e) => this.previewUrl.set(e.target?.result as string);
-    reader.readAsDataURL(file);
+    if (this.previewUrl()) {
+      URL.revokeObjectURL(this.previewUrl()!);
+    }
+    this.previewUrl.set(URL.createObjectURL(file));
   }
 
   removeMedia() {
@@ -261,12 +330,69 @@ export class HeroMgmtComponent implements OnInit {
     this.itemForm.patchValue({ mediaUrl: '' });
   }
 
+  onMobileFileSelected(event: any) {
+    const file = event.target.files[0] as File;
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      alert('File is too large. Maximum size is 50MB.');
+      return;
+    }
+    
+    // If it's an image, trigger cropper. If video, use directly.
+    if (file.type.startsWith('image/')) {
+      this.imageChangedEvent = event;
+    } else {
+      this.selectedMobileFile.set(file);
+      if (this.mobilePreviewUrl()) {
+        URL.revokeObjectURL(this.mobilePreviewUrl()!);
+      }
+      this.mobilePreviewUrl.set(URL.createObjectURL(file));
+    }
+  }
+
+  imageCropped(event: ImageCroppedEvent) {
+    this.croppedBlob = event.blob;
+    this.croppedObjectUrl = event.objectUrl;
+  }
+
+  saveCrop() {
+    if (this.croppedBlob) {
+      const file = new File([this.croppedBlob], 'mobile_hero.webp', { type: 'image/webp' });
+      this.selectedMobileFile.set(file);
+      
+      if (this.mobilePreviewUrl()) {
+        URL.revokeObjectURL(this.mobilePreviewUrl()!);
+      }
+      
+      if (this.croppedObjectUrl) {
+        this.mobilePreviewUrl.set(this.croppedObjectUrl);
+      } else {
+        this.mobilePreviewUrl.set(URL.createObjectURL(this.croppedBlob));
+      }
+    }
+    this.imageChangedEvent = '';
+  }
+
+  cancelCrop() {
+    this.imageChangedEvent = '';
+    this.croppedBlob = null;
+    this.croppedObjectUrl = null;
+  }
+
+  removeMobileMedia() {
+    this.mobilePreviewUrl.set(null);
+    this.selectedMobileFile.set(null);
+    this.itemForm.patchValue({ mobileMediaUrl: '' });
+  }
+
   async onSubmit() {
     if (!this.itemForm.value.mediaUrl && !this.selectedFile()) return;
     this.saving.set(true);
 
     try {
       let finalMediaUrl = this.itemForm.value.mediaUrl;
+      let finalMobileMediaUrl = this.itemForm.value.mobileMediaUrl;
 
       // Upload file if new one selected
       const fileToUpload = this.selectedFile();
@@ -280,8 +406,20 @@ export class HeroMgmtComponent implements OnInit {
         this.uploading.set(false);
       }
 
+      const mobileFileToUpload = this.selectedMobileFile();
+      if (mobileFileToUpload) {
+        this.uploadingMobile.set(true);
+        const uploadRes = await firstValueFrom(this.api.uploadFile(mobileFileToUpload));
+        if (uploadRes) {
+          finalMobileMediaUrl = uploadRes.url;
+          this.itemForm.patchValue({ mobileMediaUrl: uploadRes.url });
+        }
+        this.uploadingMobile.set(false);
+      }
+
       const itemData = this.itemForm.value;
       itemData.mediaUrl = finalMediaUrl; // Ensure final media URL is used
+      itemData.mobileMediaUrl = finalMobileMediaUrl;
 
       if (this.editingId()) {
         await firstValueFrom(this.api.updateHeroItem(this.editingId()!, itemData));
@@ -297,6 +435,7 @@ export class HeroMgmtComponent implements OnInit {
     } finally {
       this.saving.set(false);
       this.uploading.set(false);
+      this.uploadingMobile.set(false);
     }
   }
 

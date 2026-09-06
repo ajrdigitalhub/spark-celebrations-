@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { services } from '../db/schema.js';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, sql } from 'drizzle-orm';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { validateRequired, validateUUID, sanitizeString } from '../utils/validators.js';
 
@@ -14,7 +14,10 @@ router.get('/', async (_req: Request, res: Response) => {
       .select()
       .from(services)
       .where(eq(services.isActive, true))
-      .orderBy(asc(services.sortOrder));
+      .orderBy(
+        sql`CASE WHEN ${services.sortOrder} = 0 THEN 9999 ELSE ${services.sortOrder} END ASC`,
+        asc(services.createdAt)
+      );
     res.json(result);
   } catch (err) {
     console.error('Error fetching services:', err);
@@ -28,7 +31,10 @@ router.get('/all', requireAuth, async (_req: Request, res: Response) => {
     const result = await db
       .select()
       .from(services)
-      .orderBy(asc(services.sortOrder));
+      .orderBy(
+        sql`CASE WHEN ${services.sortOrder} = 0 THEN 9999 ELSE ${services.sortOrder} END ASC`,
+        asc(services.createdAt)
+      );
     res.json(result);
   } catch (err) {
     console.error('Error fetching all services:', err);

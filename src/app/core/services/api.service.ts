@@ -13,6 +13,7 @@ import {
   UploadResponse,
   HeroItem,
   Addon,
+  EventDecorItem,
 } from '../models/index';
 
 @Injectable({ providedIn: 'root' })
@@ -86,6 +87,30 @@ export class ApiService {
 
   deleteHeroItem(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/hero/${id}`, {
+      headers: this.authHeaders,
+    });
+  }
+
+  // ── Event & Decor Items ─────────────────────
+  getEventDecors(admin = false): Observable<EventDecorItem[]> {
+    const params = admin ? '?admin=true' : '';
+    return this.http.get<EventDecorItem[]>(`${this.baseUrl}/event-decors${params}`);
+  }
+
+  createEventDecor(data: Partial<EventDecorItem>): Observable<EventDecorItem> {
+    return this.http.post<EventDecorItem>(`${this.baseUrl}/event-decors`, data, {
+      headers: this.authHeaders,
+    });
+  }
+
+  updateEventDecor(id: string, data: Partial<EventDecorItem>): Observable<EventDecorItem> {
+    return this.http.put<EventDecorItem>(`${this.baseUrl}/event-decors/${id}`, data, {
+      headers: this.authHeaders,
+    });
+  }
+
+  deleteEventDecor(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/event-decors/${id}`, {
       headers: this.authHeaders,
     });
   }

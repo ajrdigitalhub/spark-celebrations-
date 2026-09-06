@@ -20,7 +20,7 @@ import { IconComponent } from '../icon/icon.component';
           [class.opacity-0]="i !== currentIndex()"
         >
           @if (item.imageUrl) {
-            <img [src]="item.imageUrl | imageUrl" class="w-full h-full object-cover transform scale-105 transition-transform duration-[10s] ease-linear" [class.scale-110]="i === currentIndex()">
+            <img [src]="item.imageUrl | imageUrl" [alt]="item.title || 'Featured image'" class="w-full h-full object-cover transform scale-105 transition-transform duration-[10s] ease-linear" [class.scale-110]="i === currentIndex()">
           } @else {
             <div class="w-full h-full bg-bg-elevated flex items-center justify-center">
                <app-icon [name]="item.title.includes('Birthday') ? 'cake' : 'party'" [size]="120" class="text-white/10"></app-icon>
@@ -80,7 +80,7 @@ import { IconComponent } from '../icon/icon.component';
             (click)="goTo(item.originalIndex)"
           >
             @if (item.item.imageUrl) {
-              <img [src]="item.item.imageUrl | imageUrl" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700">
+              <img [src]="item.item.imageUrl | imageUrl" [alt]="item.item.title || 'Featured thumbnail'" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700">
             } @else {
               <div class="w-full h-full bg-bg-elevated flex items-center justify-center">
                 <app-icon name="image" [size]="48" class="text-white/20"></app-icon>

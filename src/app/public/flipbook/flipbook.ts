@@ -136,7 +136,7 @@ declare var $: any;
         <app-icon name="x" [size]="24"></app-icon>
       </button>
 
-      <div class="flipbook-wrapper" [style.transform]="'scale(' + flipbookScale() + ')'">
+      <div class="flipbook-wrapper">
         <div class="flipbook" id="flipbookContainer">
           
           <!-- FRONT COVER (Page 1) -->
@@ -190,7 +190,6 @@ export class FlipbookComponent implements OnInit {
   flipbookData = signal<Flipbook | null>(null);
   loading = signal(true);
   isModalOpen = signal(false);
-  flipbookScale = signal(1);
 
   ngOnInit(): void {
     this.seo.updateMeta({
@@ -207,15 +206,38 @@ export class FlipbookComponent implements OnInit {
     });
   }
   
+  private scriptsLoaded = false;
+
+  loadScripts(callback: () => void) {
+    if (this.scriptsLoaded) {
+      callback();
+      return;
+    }
+    const jq = document.createElement('script');
+    jq.src = '/js/jquery.js';
+    jq.onload = () => {
+      const turn = document.createElement('script');
+      turn.src = '/js/turn.js';
+      turn.onload = () => {
+        this.scriptsLoaded = true;
+        callback();
+      };
+      document.head.appendChild(turn);
+    };
+    document.head.appendChild(jq);
+  }
+
   openFlipbook() {
     this.isModalOpen.set(true);
-    this.calculateScale();
     
     if (isPlatformBrowser(this.platformId)) {
       // Prevent body scrolling
       document.body.style.overflow = 'hidden';
       
-      setTimeout(() => this.initFlipbook(), 100);
+      this.loadScripts(() => {
+        this.calculateScale();
+        setTimeout(() => this.initFlipbook(), 100);
+      });
     }
   }
 
@@ -233,39 +255,74 @@ export class FlipbookComponent implements OnInit {
     }
   }
 
+  isMobile = signal(false);
+  flipbookWidth = signal(1000);
+  flipbookHeight = signal(600);
+
   calculateScale() {
     if (isPlatformBrowser(this.platformId)) {
-      const padding = 60; // Padding around the flipbook
+      const isMob = window.innerWidth < 768;
+      this.isMobile.set(isMob);
+      
+      const padding = isMob ? 20 : 60; // Padding around the flipbook
       const availableWidth = window.innerWidth - padding;
       const availableHeight = window.innerHeight - padding;
       
-      const widthScale = availableWidth / 1000;
-      const heightScale = availableHeight / 600;
+      const baseWidth = isMob ? 500 : 1000;
+      const baseHeight = 600;
+      
+      const widthScale = availableWidth / baseWidth;
+      const heightScale = availableHeight / baseHeight;
       
       // Calculate scale and cap it at 1 (don't scale up past original size)
       let scale = Math.min(widthScale, heightScale, 1);
+      if (scale < 0.1) scale = 0.1;
       
-      // If mobile, we might need a much smaller scale
-      if (scale < 0) scale = 0.1;
+      const newWidth = Math.floor(baseWidth * scale);
+      const newHeight = Math.floor(baseHeight * scale);
       
-      this.flipbookScale.set(scale);
+      this.flipbookWidth.set(newWidth);
+      this.flipbookHeight.set(newHeight);
+      
+      // If turn.js is already initialized, resize it natively
+      if (typeof $ !== 'undefined') {
+        const container = $('#flipbookContainer');
+        if (container.length && container.hasClass('turn-initialized')) {
+          container.turn('size', newWidth, newHeight);
+        }
+      }
     }
   }
 
   initFlipbook() {
+    if (typeof $ === 'undefined') return;
     const container = $('#flipbookContainer');
     // Ensure we only init turn.js once
     if (container.length && typeof $.fn.turn === 'function' && !container.hasClass('turn-initialized')) {
       container.addClass('turn-initialized');
+      
+      const isMob = this.isMobile();
       container.turn({
-        width: 1000,
-        height: 600,
+        width: this.flipbookWidth(),
+        height: this.flipbookHeight(),
         autoCenter: true,
-        display: 'double',
+        display: isMob ? 'single' : 'double',
         acceleration: true,
         elevation: 50,
         gradients: true,
       });
+    }
+  }
+
+  nextPage() {
+    if (isPlatformBrowser(this.platformId)) {
+      $('#flipbookContainer').turn('next');
+    }
+  }
+
+  prevPage() {
+    if (isPlatformBrowser(this.platformId)) {
+      $('#flipbookContainer').turn('previous');
     }
   }
 

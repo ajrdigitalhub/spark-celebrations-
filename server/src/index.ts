@@ -14,6 +14,7 @@ import settingsRouter from './routes/settings.routes.js';
 import uploadRouter from './routes/upload.routes.js';
 import heroRouter from './routes/hero.routes.js';
 import addonsRouter from './routes/addons.routes.js';
+import eventDecorsRouter from './routes/event-decors.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,7 +36,7 @@ app.use(cors({
 // ── Rate Limiting ────────────────────────────
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100,
+  max: 1000, // Increased for development
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
@@ -60,6 +61,7 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/hero', heroRouter);
 app.use('/api/addons', addonsRouter);
+app.use('/api/event-decors', eventDecorsRouter);
 
 // ── Health Check ─────────────────────────────
 app.get('/api/health', (_req, res) => {
@@ -78,12 +80,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 // ── Start Server ─────────────────────────────
-if (process.argv[1] === __filename) {
-  app.listen(PORT, () => {
-    console.log(`\n🚀 Spark Celebrations API running at http://localhost:${PORT}`);
-    console.log(`📦 Storage mode: ${process.env.STORAGE_MODE || 'local'}`);
-    console.log(`🗄️  Database: Supabase PostgreSQL (via Drizzle ORM)\n`);
-  });
-}
+// The server is now started locally via server.ts
+// When deployed to Firebase, Firebase handles the listening.
 
 export default app;

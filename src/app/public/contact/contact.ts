@@ -172,7 +172,7 @@ export class ContactComponent implements OnInit, AfterViewInit {
 
   phone = signal('+91 9990863647');
   email = signal('hello@sparkcelebrations.com');
-  address = signal('Hyderabad, Telangana, India');
+  address = signal('Bhimavaram, Andhra Pradesh, India');
   whatsapp = signal('919990863647');
 
   contactForm = { name: '', email: '', phone: '', message: '' };

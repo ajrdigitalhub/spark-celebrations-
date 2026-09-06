@@ -9,13 +9,17 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { switchMap } from 'rxjs';
 import { BookingService } from '../../core/services/booking.service';
+import { AnimatedHeartComponent } from '../../shared/components/animated-heart/animated-heart.component';
 
 @Component({
   selector: 'app-service-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, ImageUrlPipe, IconComponent],
+  imports: [CommonModule, RouterLink, ImageUrlPipe, IconComponent, AnimatedHeartComponent],
   template: `
-    <div class="min-h-screen pt-32 pb-24">
+    <!-- Crystal Heart Background -->
+    <app-animated-heart class="fixed inset-0 z-0 opacity-20 pointer-events-none mix-blend-screen"></app-animated-heart>
+    
+    <div class="min-h-screen pt-32 pb-24 relative z-10">
       <div class="section-container">
         
         <!-- Back Button -->
@@ -62,7 +66,7 @@ import { BookingService } from '../../core/services/booking.service';
                       [class.hover:opacity-100]="activeImage() !== img"
                       (click)="setActiveImage(img)"
                     >
-                      <img [src]="img | imageUrl" class="w-full h-full object-cover">
+                      <img [src]="img | imageUrl" [alt]="service()?.title + ' thumbnail'" class="w-full h-full object-cover">
                     </div>
                   }
                 </div>
@@ -95,10 +99,10 @@ import { BookingService } from '../../core/services/booking.service';
                 <div class="glass p-8 rounded-2xl relative overflow-hidden">
                   <div class="absolute -right-10 -top-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl"></div>
                   
-                  <h3 class="text-xl font-heading font-semibold mb-6 flex items-center gap-2 relative z-10">
+                  <h2 class="text-xl font-heading font-semibold mb-6 flex items-center gap-2 relative z-10">
                     <app-icon name="sparkles" [size]="24" class="text-accent"></app-icon>
                     Package Inclusions
-                  </h3>
+                  </h2>
                   <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
                     @for (feature of service()?.features || []; track feature) {
                       <li class="flex items-start gap-3">

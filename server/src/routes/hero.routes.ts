@@ -20,11 +20,12 @@ router.get('/', async (_req: Request, res: Response) => {
 // ── POST /api/hero — Create a new hero item (Admin) ──
 router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { mediaUrl, mediaType, caption, isActive, sortOrder } = req.body;
+    const { mediaUrl, mobileMediaUrl, mediaType, caption, isActive, sortOrder } = req.body;
     const [newItem] = await db
       .insert(heroItems)
       .values({
         mediaUrl,
+        mobileMediaUrl,
         mediaType,
         caption,
         isActive: isActive !== undefined ? isActive : true,
@@ -42,12 +43,13 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
 router.put('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { mediaUrl, mediaType, caption, isActive, sortOrder } = req.body;
+    const { mediaUrl, mobileMediaUrl, mediaType, caption, isActive, sortOrder } = req.body;
 
     const [updatedItem] = await db
       .update(heroItems)
       .set({
         mediaUrl,
+        mobileMediaUrl,
         mediaType,
         caption,
         isActive,

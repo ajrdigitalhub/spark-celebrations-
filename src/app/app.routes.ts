@@ -112,6 +112,12 @@ export const routes: Routes = [
             title: 'Add-ons | Admin',
           },
           {
+            path: 'event-decors',
+            loadComponent: () =>
+              import('./admin/event-decors-mgmt/event-decors-mgmt').then((m) => m.EventDecorsMgmtComponent),
+            title: 'Events & Decors | Admin',
+          },
+          {
             path: 'flipbook',
             loadComponent: () =>
               import('./admin/flipbook-mgmt/flipbook-mgmt').then((m) => m.FlipbookMgmtComponent),
@@ -136,6 +142,12 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./admin/settings/settings').then((m) => m.SettingsComponent),
             title: 'Settings | Admin',
+          },
+          {
+            path: 'optimizer',
+            loadComponent: () =>
+              import('./admin/image-optimizer/image-optimizer').then((m) => m.ImageOptimizerComponent),
+            title: 'Image Optimizer | Admin',
           },
         ],
       },

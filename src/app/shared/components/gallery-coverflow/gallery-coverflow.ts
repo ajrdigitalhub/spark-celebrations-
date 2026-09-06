@@ -8,15 +8,17 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
   standalone: true,
   imports: [CommonModule, ImageUrlPipe],
   template: `
-    <div class="carousel-container relative w-full max-w-[1200px] mx-auto py-12 h-[500px] md:h-[600px] flex items-center justify-center">
-      <div class="scene">
-        <div class="a3d" [style.--n]="displayItems.length">
-          @for (item of displayItems; track $index; let i = $index) {
-            <div class="card group" [style.--i]="i">
-              <img [src]="item.imageUrl | imageUrl" [alt]="item.caption || 'Gallery Image'" class="w-full h-full object-cover rounded-2xl">
-              
-            </div>
-          }
+    <div class="relative w-full max-w-[1200px] mx-auto py-4 md:py-6">
+      <!-- 3D Coverflow (All Devices) -->
+      <div class="flex carousel-container relative w-full h-[350px] md:h-[450px] items-center justify-center">
+        <div class="scene">
+          <div class="a3d" [style.--n]="displayItems.length">
+            @for (item of displayItems; track $index; let i = $index) {
+              <div class="card group" [style.--i]="i">
+                <img [src]="item.imageUrl | imageUrl" [alt]="item.caption || 'Gallery Image'" class="w-full h-full object-cover rounded-2xl">
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
@@ -49,7 +51,7 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
     }
     
     .card {
-      --w: 220px;
+      --w: 170px;
       @media (min-width: 768px) {
         --w: 280px;
       }
@@ -63,6 +65,14 @@ import { ImageUrlPipe } from '../../pipes/image-url.pipe';
         rotateY(calc(var(--i) * var(--ba)))
         translateZ(calc(-1 * (.5 * var(--w) + 1em) / tan(.5 * var(--ba))));
       position: relative;
+    }
+    
+    .hide-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none; /* Chrome, Safari and Opera */
     }
   `
 })
@@ -83,4 +93,5 @@ export class GalleryCoverflowComponent implements OnChanges {
     }
   }
 }
+
 
