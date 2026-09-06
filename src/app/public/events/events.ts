@@ -1,10 +1,12 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { EventBookingService } from '../../core/services/event-booking.service';
 import { EventDecorItem } from '../../core/models/index';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-events',
@@ -34,17 +36,6 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
           <!-- Tabs -->
           <div class="flex justify-center mb-12 animate-fade-in-up" style="animation-delay: 100ms;">
             <div class="inline-flex bg-bg-surface border border-border p-1 rounded-xl shadow-sm">
-              <button 
-                class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300"
-                [class.bg-bg-elevated]="activeTab() === 'all'"
-                [class.text-text-primary]="activeTab() === 'all'"
-                [class.shadow-sm]="activeTab() === 'all'"
-                [class.text-text-secondary]="activeTab() !== 'all'"
-                [class.hover:text-text-primary]="activeTab() !== 'all'"
-                (click)="activeTab.set('all')"
-              >
-                All
-              </button>
               <button 
                 class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300"
                 [class.bg-bg-elevated]="activeTab() === 'event'"
@@ -138,18 +129,25 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 export class EventsComponent implements OnInit {
   private api = inject(ApiService);
   private bookingService = inject(EventBookingService);
+  private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
   items = signal<EventDecorItem[]>([]);
   isLoading = signal(true);
-  activeTab = signal<'all' | 'event' | 'decor'>('all');
+  activeTab = signal<'event' | 'decor'>('event');
 
   filteredItems = computed(() => {
-    const tab = this.activeTab();
-    if (tab === 'all') return this.items();
-    return this.items().filter(item => item.type === tab);
+    return this.items().filter(item => item.type === this.activeTab());
   });
 
   ngOnInit() {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const tab = params['tab'];
+      if (tab === 'event' || tab === 'decor') {
+        this.activeTab.set(tab);
+      }
+    });
+
     this.api.getEventDecors().subscribe({
       next: (data) => {
         // Sort by sortOrder

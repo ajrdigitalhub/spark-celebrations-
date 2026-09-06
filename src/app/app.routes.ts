@@ -112,10 +112,16 @@ export const routes: Routes = [
             title: 'Add-ons | Admin',
           },
           {
-            path: 'event-decors',
+            path: 'events',
             loadComponent: () =>
-              import('./admin/event-decors-mgmt/event-decors-mgmt').then((m) => m.EventDecorsMgmtComponent),
-            title: 'Events & Decors | Admin',
+              import('./admin/events-mgmt/events-mgmt').then((m) => m.EventsMgmtComponent),
+            title: 'Events | Admin',
+          },
+          {
+            path: 'decors',
+            loadComponent: () =>
+              import('./admin/decors-mgmt/decors-mgmt').then((m) => m.DecorsMgmtComponent),
+            title: 'Decors | Admin',
           },
           {
             path: 'flipbook',

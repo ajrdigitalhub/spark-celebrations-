@@ -111,7 +111,8 @@ export class AdminLayoutComponent {
   navItems = [
     { icon: 'layout-dashboard', label: 'Dashboard', path: '/admin/dashboard', exact: true },
     { icon: 'party', label: 'Services', path: '/admin/services', exact: false },
-    { icon: 'party', label: 'Events & Decors', path: '/admin/event-decors', exact: false },
+    { icon: 'party', label: 'Events', path: '/admin/events', exact: false },
+    { icon: 'sparkles', label: 'Decors', path: '/admin/decors', exact: false },
     { icon: 'camera', label: 'Gallery', path: '/admin/gallery', exact: false },
     { icon: 'image', label: 'Hero Slides', path: '/admin/hero', exact: false },
     { icon: 'plus-circle', label: 'Add-ons', path: '/admin/addons', exact: false },

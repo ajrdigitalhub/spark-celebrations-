@@ -27,8 +27,9 @@ import { firstValueFrom } from 'rxjs';
           <table class="w-full">
             <thead>
               <tr class="border-b border-border">
+                <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium w-16">#</th>
                 <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Service</th>
-                <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Order</th>
+
                 <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Price</th>
                 <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Status</th>
                 <th class="px-6 py-3 text-left text-xs uppercase tracking-wider text-text-muted font-medium">Booking</th>
@@ -36,8 +37,9 @@ import { firstValueFrom } from 'rxjs';
               </tr>
             </thead>
             <tbody>
-              @for (service of services(); track service.id) {
+              @for (service of services(); track service.id; let i = $index) {
                 <tr class="border-b border-border hover:bg-bg-elevated/50 transition-colors">
+                  <td class="px-6 py-4 text-sm font-medium text-text-secondary">{{ i + 1 }}</td>
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-lg bg-bg-elevated flex items-center justify-center text-accent overflow-hidden shrink-0">
@@ -50,7 +52,7 @@ import { firstValueFrom } from 'rxjs';
                       <span class="text-sm font-medium text-text-primary">{{ service.title }}</span>
                     </div>
                   </td>
-                  <td class="px-6 py-4 text-sm font-medium text-text-primary">{{ service.sortOrder }}</td>
+
                   <td class="px-6 py-4 text-sm text-text-secondary">{{ service.price || '—' }}</td>
                   <td class="px-6 py-4">
                     <span class="px-2.5 py-1 rounded-full text-xs font-medium" [class]="service.isActive ? 'bg-success/10 text-success' : 'bg-error/10 text-error'">
